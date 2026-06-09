@@ -5,3 +5,4 @@ dist/
 *.local
 tmp/
 temp/
+coverage/

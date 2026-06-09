@@ -1,0 +1,65 @@
+name: Frontend — Quality Gate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  quality:
+    name: Lint · Test · Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 1. Lint: 0 warnings permitidos ──────────────────────────────────────
+      - name: Lint
+        run: npm run lint
+
+      # ── 2. Testes + cobertura (falha se < 85% em qualquer métrica) ──────────
+      - name: Test with coverage
+        run: npm run test:ci
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
+      # Exibe resumo de cobertura diretamente no step summary do GitHub
+      - name: Coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "## Cobertura de Testes" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat coverage/coverage-summary.json | node -e "
+              const data = require('/dev/stdin');
+              const t = data.total;
+              const fmt = (v) => v.pct.toFixed(1).padStart(6) + '% (' + v.covered + '/' + v.total + ')';
+              console.log('Statements : ' + fmt(t.statements));
+              console.log('Branches   : ' + fmt(t.branches));
+              console.log('Functions  : ' + fmt(t.functions));
+              console.log('Lines      : ' + fmt(t.lines));
+            "
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # ── 3. Build: type-check (tsc -b) + bundle Vite ─────────────────────────
+      - name: Build
+        run: npm run build

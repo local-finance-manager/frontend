@@ -23,7 +23,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       # ── 1. Lint: 0 warnings permitidos ──────────────────────────────────────
       - name: Lint

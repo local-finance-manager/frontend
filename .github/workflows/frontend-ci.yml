@@ -48,15 +48,16 @@ jobs:
           if [ -f coverage/coverage-summary.json ]; then
             echo "## Cobertura de Testes" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-            cat coverage/coverage-summary.json | node -e "
-              const data = require('/dev/stdin');
+            node -e "
+              const fs = require('fs');
+              const data = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
               const t = data.total;
               const fmt = (v) => v.pct.toFixed(1).padStart(6) + '% (' + v.covered + '/' + v.total + ')';
               console.log('Statements : ' + fmt(t.statements));
               console.log('Branches   : ' + fmt(t.branches));
               console.log('Functions  : ' + fmt(t.functions));
               console.log('Lines      : ' + fmt(t.lines));
-            "
+            " >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
           fi
 

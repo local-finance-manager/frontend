@@ -52,7 +52,10 @@ jobs:
               const fs = require('fs');
               const data = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
               const t = data.total;
-              const fmt = (v) => v.pct.toFixed(1).padStart(6) + '% (' + v.covered + '/' + v.total + ')';
+              const fmt = (v) => {
+                const pct = typeof v.pct === 'number' ? v.pct.toFixed(1) + '%' : v.pct;
+                return pct.padStart(8) + '  (' + v.covered + '/' + v.total + ')';
+              };
               console.log('Statements : ' + fmt(t.statements));
               console.log('Branches   : ' + fmt(t.branches));
               console.log('Functions  : ' + fmt(t.functions));

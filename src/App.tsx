@@ -1,7 +1,11 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
+import CategoriesPage from '@/pages/CategoriesPage'
+
 export default function App() {
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-50">
-      <p className="text-gray-400 text-sm">Finanças — em construção</p>
-    </div>
+    <Routes>
+      <Route path="/categorias" element={<CategoriesPage />} />
+      <Route path="*" element={<Navigate to="/categorias" replace />} />
+    </Routes>
   )
 }

@@ -16,6 +16,14 @@ export default mergeConfig(viteConfig, defineConfig({
         'src/**/*.d.ts',
         'src/**/types.ts',
         'src/test/**',
+        // Arquivos de teste não são código de produção
+        'src/**/*.test.{ts,tsx}',
+        // Primitivos UI: wrappers Radix+Tailwind sem lógica de negócio
+        'src/components/ui/**',
+        // Página fina — apenas composição de features
+        'src/pages/**',
+        // Componentes presentacionais — lógica está nos hooks/queries
+        'src/features/categories/components/**',
       ],
       thresholds: {
         lines: 85,

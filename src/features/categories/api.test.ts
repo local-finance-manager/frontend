@@ -183,7 +183,12 @@ describe('createSubcategory', () => {
     const input = { categoryId: 'cat-1', name: 'Restaurante', icon: 'utensils', color: '#16a34a' }
     const result = await createSubcategory(input)
 
-    expect(mockPost).toHaveBeenCalledWith('/subcategories', input)
+    expect(mockPost).toHaveBeenCalledWith('/subcategories', {
+      category_id: 'cat-1',
+      name: 'Restaurante',
+      icon: 'utensils',
+      color: '#16a34a',
+    })
     expect(result.id).toBe('sub-1')
     expect(result.createdAt).toBeInstanceOf(Date)
   })

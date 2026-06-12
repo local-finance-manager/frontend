@@ -129,7 +129,12 @@ export async function fetchSubcategoriesByType(type: CategoryType): Promise<Subc
 }
 
 export async function createSubcategory(input: CreateSubcategoryInput): Promise<Subcategory> {
-  const { data } = await apiClient.post<SubcategoryApiResponse>('/subcategories', input)
+  const { data } = await apiClient.post<SubcategoryApiResponse>('/subcategories', {
+    category_id: input.categoryId,
+    name: input.name,
+    icon: input.icon,
+    color: input.color,
+  })
   return parseSubcategoryFromApi(data)
 }
 

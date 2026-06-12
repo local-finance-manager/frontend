@@ -16,11 +16,11 @@ type CategoryApiResponse = {
   id: string
   name: string
   type: 'despesa' | 'receita' | 'transferencia'
-  icon: string
-  color: string
-  canBeDeleted: boolean
-  createdAt: string
-  updatedAt: string
+  icon?: string
+  color?: string
+  can_be_deleted: boolean
+  created_at: string
+  updated_at: string
 }
 
 type CategoryWithSubsApiResponse = CategoryApiResponse & {
@@ -29,13 +29,13 @@ type CategoryWithSubsApiResponse = CategoryApiResponse & {
 
 type SubcategoryApiResponse = {
   id: string
-  categoryId: string
+  category_id: string
   name: string
-  icon: string
-  color: string
-  canBeDeleted: boolean
-  createdAt: string
-  updatedAt: string
+  icon?: string
+  color?: string
+  can_be_deleted: boolean
+  created_at: string
+  updated_at: string
 }
 
 type PagedApiResponse<T> = {
@@ -58,17 +58,27 @@ type SimpleListApiResponse<T> = {
 
 export function parseCategoryFromApi(raw: CategoryApiResponse): Category {
   return {
-    ...raw,
-    createdAt: new Date(raw.createdAt),
-    updatedAt: new Date(raw.updatedAt),
+    id: raw.id,
+    name: raw.name,
+    type: raw.type,
+    icon: raw.icon ?? '',
+    color: raw.color ?? '',
+    canBeDeleted: raw.can_be_deleted,
+    createdAt: new Date(raw.created_at),
+    updatedAt: new Date(raw.updated_at),
   }
 }
 
 export function parseSubcategoryFromApi(raw: SubcategoryApiResponse): Subcategory {
   return {
-    ...raw,
-    createdAt: new Date(raw.createdAt),
-    updatedAt: new Date(raw.updatedAt),
+    id: raw.id,
+    categoryId: raw.category_id,
+    name: raw.name,
+    icon: raw.icon ?? '',
+    color: raw.color ?? '',
+    canBeDeleted: raw.can_be_deleted,
+    createdAt: new Date(raw.created_at),
+    updatedAt: new Date(raw.updated_at),
   }
 }
 

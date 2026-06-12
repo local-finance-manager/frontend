@@ -25,20 +25,20 @@ const RAW_CATEGORY = {
   type: 'despesa' as const,
   icon: 'utensils',
   color: '#22c55e',
-  canBeDeleted: true,
-  createdAt: '2026-01-15T10:00:00Z',
-  updatedAt: '2026-03-20T14:30:00Z',
+  can_be_deleted: true,
+  created_at: '2026-01-15T10:00:00Z',
+  updated_at: '2026-03-20T14:30:00Z',
 }
 
 const RAW_SUBCATEGORY = {
   id: 'sub-1',
-  categoryId: 'cat-1',
+  category_id: 'cat-1',
   name: 'Restaurante',
   icon: 'utensils',
   color: '#16a34a',
-  canBeDeleted: true,
-  createdAt: '2026-01-15T10:00:00Z',
-  updatedAt: '2026-03-20T14:30:00Z',
+  can_be_deleted: true,
+  created_at: '2026-01-15T10:00:00Z',
+  updated_at: '2026-03-20T14:30:00Z',
 }
 
 // ── parseCategoryFromApi ──────────────────────────────────────────────────────

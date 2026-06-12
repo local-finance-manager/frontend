@@ -28,7 +28,6 @@ export function CategoryList({
   onEditSubcategory,
   onDeleteSubcategory,
 }: CategoryListProps) {
-  // D8: 4 requests paralelos — 1 lista de categorias + 3 por tipo de sub
   const categoriesQuery = useCategories()
   const subsDespesa = useSubcategoriesByType('despesa')
   const subsReceita = useSubcategoriesByType('receita')

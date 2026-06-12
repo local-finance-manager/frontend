@@ -37,7 +37,6 @@ export function useCategoryWithSubs(id: string) {
   })
 }
 
-// D8: 3 queries paralelas substituem ~24 individuais
 export function useSubcategoriesByType(type: CategoryType) {
   return useQuery({
     queryKey: categoryKeys.subcategoriesByType(type),
@@ -81,7 +80,8 @@ export function useDeleteCategory() {
 }
 
 // ── Mutations — Subcategoria ──────────────────────────────────────────────────
-// Invalidam categoryKeys.all para atualizar também as queries subcategoriesByType (D8)
+// categoryKeys.all cobre subcategoriesByType — necessário porque mutations de sub
+// precisam refletir nos 3 tipos já carregados em paralelo
 
 export function useCreateSubcategory() {
   const qc = useQueryClient()

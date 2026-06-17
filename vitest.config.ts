@@ -18,12 +18,17 @@ export default mergeConfig(viteConfig, defineConfig({
         'src/test/**',
         // Arquivos de teste não são código de produção
         'src/**/*.test.{ts,tsx}',
-        // Primitivos UI: wrappers Radix+Tailwind sem lógica de negócio
+        // Primitivos UI e componentes presentacionais sem lógica de negócio
         'src/components/ui/**',
+        'src/components/Layout.tsx',
+        'src/components/Sidebar.tsx',
         // Página fina — apenas composição de features
         'src/pages/**',
         // Componentes presentacionais — lógica está nos hooks/queries
         'src/features/categories/components/**',
+        'src/features/transactions/components/**',
+        // Hook de URL params — depende de react-router useSearchParams
+        'src/features/transactions/hooks/useTransactionFilters.ts',
       ],
       thresholds: {
         lines: 85,

@@ -3,12 +3,32 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --c-bg:      #f9fafb;
+    --c-surface: #ffffff;
+    --c-subtle:  #f3f4f6;
+    --c-border:  #e5e7eb;
+    --c-text:    #111827;
+    --c-text-2:  #4b5563;
+    --c-text-3:  #6b7280;
+  }
+
+  html.dark {
+    --c-bg:      #030712;
+    --c-surface: #111827;
+    --c-subtle:  #1f2937;
+    --c-border:  #374151;
+    --c-text:    #f9fafb;
+    --c-text-2:  #d1d5db;
+    --c-text-3:  #9ca3af;
+  }
+
   * {
     box-sizing: border-box;
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-c-bg text-c-text antialiased;
     font-family: 'Inter', system-ui, sans-serif;
   }
 }

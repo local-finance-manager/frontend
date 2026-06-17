@@ -19,10 +19,10 @@ export function SubcategoryItem({ subcategory, onEdit, onDelete }: SubcategoryIt
         <CategoryIcon name={subcategory.icon} size={14} className="text-white" />
       </div>
 
-      <span className="flex-1 text-sm text-gray-700">{subcategory.name}</span>
+      <span className="flex-1 text-sm text-c-text-2">{subcategory.name}</span>
 
       {!subcategory.canBeDeleted && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+        <span className="inline-flex items-center gap-1 rounded-full bg-c-subtle px-2 py-0.5 text-xs text-c-text-3">
           <Lock size={10} />
           Sistema
         </span>
@@ -37,7 +37,7 @@ export function SubcategoryItem({ subcategory, onEdit, onDelete }: SubcategoryIt
             variant="ghost"
             size="sm"
             onClick={onDelete}
-            className="text-red-500 hover:bg-red-50 hover:text-red-700"
+            className="text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950"
             aria-label="Excluir subcategoria"
           >
             <Trash2 size={14} />

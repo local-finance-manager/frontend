@@ -15,7 +15,7 @@ function CategoryListSkeleton() {
   return (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-200" />
+        <div key={i} className="h-16 animate-pulse rounded-lg bg-c-subtle" />
       ))}
     </div>
   )
@@ -49,13 +49,12 @@ export function CategoryList({
 
   if (isError) {
     return (
-      <p className="py-6 text-sm text-gray-500">
+      <p className="py-6 text-sm text-c-text-3">
         Não foi possível carregar as categorias. Tente novamente.
       </p>
     )
   }
 
-  // Agrupa todas as subs por categoryId num único Map
   const allSubs: Subcategory[] = [
     ...(subsDespesa.data ?? []),
     ...(subsReceita.data ?? []),

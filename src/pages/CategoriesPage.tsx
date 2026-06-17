@@ -92,7 +92,7 @@ export default function CategoriesPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Categorias</h1>
+        <h1 className="text-2xl font-bold text-c-text">Categorias</h1>
         <Button onClick={() => setCatDialog({ open: true, editing: null })}>
           <Plus size={16} />
           Nova categoria

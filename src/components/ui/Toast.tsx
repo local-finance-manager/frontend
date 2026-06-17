@@ -19,20 +19,20 @@ export function Toaster() {
           }}
           className={cn(
             'flex w-full max-w-sm items-start gap-3 rounded-lg border p-4 shadow-lg',
-            'bg-white text-gray-900',
-            t.variant === 'destructive' && 'border-red-200 bg-red-50 text-red-900',
-            t.variant !== 'destructive' && 'border-gray-200',
+            'bg-c-surface text-c-text border-c-border',
+            t.variant === 'destructive' &&
+              'border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-300',
           )}
         >
           <div className="flex-1 space-y-1">
             <RadixToast.Title className="text-sm font-medium">{t.title}</RadixToast.Title>
             {t.description && (
-              <RadixToast.Description className="text-sm text-gray-500">
+              <RadixToast.Description className="text-sm text-c-text-3">
                 {t.description}
               </RadixToast.Description>
             )}
           </div>
-          <RadixToast.Close className="shrink-0 rounded p-0.5 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500">
+          <RadixToast.Close className="shrink-0 rounded p-0.5 text-c-text-3 hover:text-c-text-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
             <X size={14} />
             <span className="sr-only">Fechar</span>
           </RadixToast.Close>

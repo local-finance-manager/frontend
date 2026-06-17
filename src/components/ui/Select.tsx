@@ -14,7 +14,7 @@ export function SelectTrigger({
   return (
     <RadixSelect.Trigger
       className={cn(
-        'flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm',
+        'flex h-10 w-full items-center justify-between rounded-md border border-c-border bg-c-surface px-3 py-2 text-sm text-c-text',
         'focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,
@@ -23,7 +23,7 @@ export function SelectTrigger({
     >
       {children}
       <RadixSelect.Icon asChild>
-        <ChevronDown className="h-4 w-4 text-gray-500" />
+        <ChevronDown className="h-4 w-4 text-c-text-3" />
       </RadixSelect.Icon>
     </RadixSelect.Trigger>
   )
@@ -39,7 +39,7 @@ export function SelectContent({
     <RadixSelect.Portal>
       <RadixSelect.Content
         className={cn(
-          'relative z-50 min-w-[8rem] overflow-hidden rounded-md border border-gray-200 bg-white shadow-md',
+          'relative z-50 min-w-[8rem] overflow-hidden rounded-md border border-c-border bg-c-surface shadow-md',
           className,
         )}
         position={position}
@@ -59,8 +59,8 @@ export function SelectItem({
   return (
     <RadixSelect.Item
       className={cn(
-        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm text-gray-900',
-        'focus:bg-brand-50 focus:text-brand-900 focus:outline-none',
+        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm text-c-text',
+        'focus:bg-c-subtle focus:text-c-text focus:outline-none',
         'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className,
       )}

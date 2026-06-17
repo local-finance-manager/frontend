@@ -92,7 +92,6 @@ export function CategoryFormDialog({ open, onOpenChange, editing }: CategoryForm
           </DialogHeader>
 
           <div className="space-y-4 px-6 pb-4">
-            {/* Nome */}
             <div className="space-y-1.5">
               <Label htmlFor="cat-name">Nome</Label>
               <Input
@@ -105,11 +104,10 @@ export function CategoryFormDialog({ open, onOpenChange, editing }: CategoryForm
               />
             </div>
 
-            {/* Tipo — readonly em edição */}
             <div className="space-y-1.5">
               <Label htmlFor="cat-type">Tipo</Label>
               {isEditing ? (
-                <p className="flex h-10 items-center rounded-md border border-gray-200 bg-gray-50 px-3 text-sm text-gray-600">
+                <p className="flex h-10 items-center rounded-md border border-c-border bg-c-subtle px-3 text-sm text-c-text-2">
                   {CATEGORY_TYPE_LABELS[type]}
                 </p>
               ) : (
@@ -128,7 +126,6 @@ export function CategoryFormDialog({ open, onOpenChange, editing }: CategoryForm
               )}
             </div>
 
-            {/* Ícone + preview */}
             <div className="space-y-1.5">
               <Label htmlFor="cat-icon">Ícone (nome Lucide)</Label>
               <div className="flex items-center gap-3">
@@ -148,7 +145,6 @@ export function CategoryFormDialog({ open, onOpenChange, editing }: CategoryForm
               </div>
             </div>
 
-            {/* Cor */}
             <div className="space-y-1.5">
               <Label htmlFor="cat-color">Cor</Label>
               <div className="flex items-center gap-3">
@@ -157,7 +153,7 @@ export function CategoryFormDialog({ open, onOpenChange, editing }: CategoryForm
                   id="cat-color"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
-                  className="h-10 w-14 cursor-pointer rounded-md border border-gray-300 p-1"
+                  className="h-10 w-14 cursor-pointer rounded-md border border-c-border p-1"
                 />
                 <Input
                   value={color}

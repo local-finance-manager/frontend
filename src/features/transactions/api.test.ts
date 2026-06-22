@@ -35,6 +35,7 @@ const RAW_TRANSACTION = {
   payment_date: '2026-06-15',
   account_id: null,
   destination_account_id: null,
+  credit_card_id: null,
   created_at: '2026-06-15T12:00:00Z',
   updated_at: '2026-06-15T12:00:00Z',
   subcategory: {
@@ -96,6 +97,16 @@ describe('parseTransactionFromApi', () => {
     const raw = { ...RAW_TRANSACTION, description: null }
     const result = parseTransactionFromApi(raw)
     expect(result.description).toBeNull()
+  })
+
+  it('mapeia credit_card_id nulo para creditCardId null', () => {
+    const result = parseTransactionFromApi({ ...RAW_TRANSACTION, credit_card_id: null })
+    expect(result.creditCardId).toBeNull()
+  })
+
+  it('mapeia credit_card_id preenchido para creditCardId string', () => {
+    const result = parseTransactionFromApi({ ...RAW_TRANSACTION, credit_card_id: 'card-uuid' })
+    expect(result.creditCardId).toBe('card-uuid')
   })
 })
 
@@ -187,6 +198,7 @@ describe('createTransaction', () => {
       paymentDate: '2026-06-15',
       accountId: null,
       destinationAccountId: null,
+      creditCardId: null,
     }
 
     const result = await createTransaction(input)
@@ -202,6 +214,7 @@ describe('createTransaction', () => {
       payment_date: '2026-06-15',
       account_id: null,
       destination_account_id: null,
+      credit_card_id: null,
     })
     expect(result.id).toBe('trx-1')
     expect(result.createdAt).toBeInstanceOf(Date)
@@ -230,6 +243,7 @@ describe('updateTransaction', () => {
       paymentDate: null,
       accountId: null,
       destinationAccountId: null,
+      creditCardId: null,
     }
 
     await updateTransaction('trx-1', input)
@@ -245,6 +259,7 @@ describe('updateTransaction', () => {
       payment_date: null,
       account_id: null,
       destination_account_id: null,
+      credit_card_id: null,
     })
   })
 })

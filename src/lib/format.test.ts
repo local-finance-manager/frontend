@@ -66,11 +66,23 @@ describe('formatCurrencyInput', () => {
     expect(formatCurrencyInput(32000)).toBe('320,00')
   })
 
-  it('converte 150099 para "1500,99"', () => {
-    expect(formatCurrencyInput(150099)).toBe('1500,99')
+  it('converte 150099 para "1.500,99" com separador de milhar', () => {
+    expect(formatCurrencyInput(150099)).toBe('1.500,99')
   })
 
   it('converte 0 para "0,00"', () => {
     expect(formatCurrencyInput(0)).toBe('0,00')
+  })
+
+  it('converte 500000 (R$5.000) para "5.000,00"', () => {
+    expect(formatCurrencyInput(500000)).toBe('5.000,00')
+  })
+
+  it('converte 1500000 (R$15.000) para "15.000,00"', () => {
+    expect(formatCurrencyInput(1500000)).toBe('15.000,00')
+  })
+
+  it('converte 100000000 (R$1.000.000) para "1.000.000,00"', () => {
+    expect(formatCurrencyInput(100000000)).toBe('1.000.000,00')
   })
 })

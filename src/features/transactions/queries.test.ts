@@ -98,6 +98,7 @@ describe('useCreateTransaction', () => {
       paymentDate: null,
       accountId: null,
       destinationAccountId: null,
+      creditCardId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       subcategory: {
@@ -122,6 +123,7 @@ describe('useCreateTransaction', () => {
       paymentDate: null,
       accountId: null,
       destinationAccountId: null,
+      creditCardId: null,
     }
 
     await result.current.mutateAsync(input)
@@ -149,6 +151,7 @@ describe('useConfirmTransaction', () => {
       paymentDate: '2026-06-17',
       accountId: null,
       destinationAccountId: null,
+      creditCardId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       subcategory: {
@@ -204,6 +207,7 @@ describe('useUpdateTransaction', () => {
       paymentDate: null,
       accountId: null,
       destinationAccountId: null,
+      creditCardId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       subcategory: {
@@ -228,6 +232,7 @@ describe('useUpdateTransaction', () => {
       paymentDate: null,
       accountId: null,
       destinationAccountId: null,
+      creditCardId: null,
     }
 
     await result.current.mutateAsync({ id: 'trx-1', input })

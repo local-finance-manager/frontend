@@ -21,5 +21,8 @@ export function parseAmountInput(raw: string): number {
 }
 
 export function formatCurrencyInput(centavos: number): string {
-  return (centavos / 100).toFixed(2).replace('.', ',')
+  const value = centavos / 100
+  const [intPart, decPart] = value.toFixed(2).split('.')
+  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return `${intFormatted},${decPart}`
 }

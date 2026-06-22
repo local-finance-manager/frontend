@@ -29,6 +29,7 @@ type TransactionApiResp = {
   payment_date: string | null
   account_id: string | null
   destination_account_id: string | null
+  credit_card_id: string | null
   created_at: string
   updated_at: string
   subcategory: SubcategoryApiResp
@@ -68,6 +69,7 @@ export function parseTransactionFromApi(raw: TransactionApiResp): Transaction {
     paymentDate: raw.payment_date,
     accountId: raw.account_id,
     destinationAccountId: raw.destination_account_id,
+    creditCardId: raw.credit_card_id,
     createdAt: new Date(raw.created_at),
     updatedAt: new Date(raw.updated_at),
     subcategory: {
@@ -135,6 +137,7 @@ export async function createTransaction(
     payment_date: input.paymentDate,
     account_id: input.accountId,
     destination_account_id: input.destinationAccountId,
+    credit_card_id: input.creditCardId,
   })
   return parseTransactionFromApi(data)
 }
@@ -154,6 +157,7 @@ export async function updateTransaction(
     payment_date: input.paymentDate,
     account_id: input.accountId,
     destination_account_id: input.destinationAccountId,
+    credit_card_id: input.creditCardId,
   })
   return parseTransactionFromApi(data)
 }

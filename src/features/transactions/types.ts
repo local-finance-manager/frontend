@@ -36,6 +36,7 @@ export type Transaction = {
   paymentDate: string | null
   accountId: string | null
   destinationAccountId: string | null
+  creditCardId: string | null
   createdAt: Date
   updatedAt: Date
   subcategory: SubcategoryInfo
@@ -73,6 +74,7 @@ export type CreateTransactionInput = {
   paymentDate: string | null
   accountId: string | null
   destinationAccountId: string | null
+  creditCardId: string | null
 }
 
 export type UpdateTransactionInput = CreateTransactionInput

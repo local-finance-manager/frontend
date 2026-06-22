@@ -7,6 +7,7 @@ import { isAppError } from '@/lib/api-client'
 import { useDeleteTransaction, useConfirmTransaction, useUpdateTransaction } from '@/features/transactions/queries'
 import { useTransactionFilters } from '@/features/transactions/hooks/useTransactionFilters'
 import { useTransactions } from '@/features/transactions/queries'
+import { useCreditCards } from '@/features/credit-cards/queries'
 import { SummaryBar } from '@/features/transactions/components/SummaryBar'
 import { TransactionFilters } from '@/features/transactions/components/TransactionFilters'
 import { TransactionList } from '@/features/transactions/components/TransactionList'
@@ -43,6 +44,7 @@ export default function TransactionsPage() {
   })
 
   const query = useTransactions(filters)
+  const { data: creditCards = [] } = useCreditCards(false)
   const confirmMutation = useConfirmTransaction()
   const deleteMutation = useDeleteTransaction()
   const updateMutation = useUpdateTransaction()
@@ -76,6 +78,7 @@ export default function TransactionsPage() {
           paymentDate: null,
           accountId: t.accountId,
           destinationAccountId: t.destinationAccountId,
+          creditCardId: t.creditCardId,
         },
       })
       toast({ title: 'Lançamento cancelado' })
@@ -164,6 +167,7 @@ export default function TransactionsPage() {
         open={formDialog.open}
         editing={formDialog.editing}
         onOpenChange={(open) => setFormDialog((s) => ({ ...s, open }))}
+        creditCards={creditCards}
       />
 
       <ConfirmPaymentDialog

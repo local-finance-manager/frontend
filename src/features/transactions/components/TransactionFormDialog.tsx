@@ -17,10 +17,17 @@ import {
   type CreateTransactionInput,
 } from '../types'
 
+type CreditCardOption = {
+  id: string
+  name: string
+  lastFourDigits: string | null
+}
+
 type Props = {
   open: boolean
   editing: Transaction | null
   onOpenChange: (open: boolean) => void
+  creditCards: CreditCardOption[]
 }
 
 type FormState = {
@@ -32,6 +39,7 @@ type FormState = {
   status: TransactionStatus
   competenceDate: string
   paymentDate: string
+  creditCardId: string
 }
 
 type TaggedSub = {
@@ -58,9 +66,10 @@ const DEFAULT_FORM: FormState = {
   status: 'pendente',
   competenceDate: todayString(),
   paymentDate: '',
+  creditCardId: '',
 }
 
-export function TransactionFormDialog({ open, editing, onOpenChange }: Props) {
+export function TransactionFormDialog({ open, editing, onOpenChange, creditCards }: Props) {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
   const [error, setError] = useState<string | null>(null)
   const [subcategorySearch, setSubcategorySearch] = useState('')
@@ -113,6 +122,7 @@ export function TransactionFormDialog({ open, editing, onOpenChange }: Props) {
         status: editing.status,
         competenceDate: editing.competenceDate,
         paymentDate: editing.paymentDate ?? '',
+        creditCardId: editing.creditCardId ?? '',
       })
       setSubcategorySearch(editing.subcategory.name)
     } else {
@@ -122,6 +132,14 @@ export function TransactionFormDialog({ open, editing, onOpenChange }: Props) {
     setError(null)
     setShowSubList(false)
   }, [open, editing])
+
+  function handlePaymentMethodChange(method: PaymentMethod | '') {
+    setForm((prev) => ({
+      ...prev,
+      paymentMethod: method,
+      creditCardId: method === 'cartao_credito' ? prev.creditCardId : '',
+    }))
+  }
 
   function handleStatusChange(status: TransactionStatus) {
     setForm((prev) => {
@@ -159,6 +177,8 @@ export function TransactionFormDialog({ open, editing, onOpenChange }: Props) {
       paymentDate: form.status === 'realizado' ? form.paymentDate : null,
       accountId: null,
       destinationAccountId: null,
+      creditCardId:
+        form.paymentMethod === 'cartao_credito' && form.creditCardId ? form.creditCardId : null,
     }
 
     try {
@@ -291,9 +311,7 @@ export function TransactionFormDialog({ open, editing, onOpenChange }: Props) {
                 <select
                   id="trx-payment-method"
                   value={form.paymentMethod}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, paymentMethod: e.target.value as PaymentMethod }))
-                  }
+                  onChange={(e) => handlePaymentMethodChange(e.target.value as PaymentMethod | '')}
                   className={selectCls}
                   required
                 >
@@ -324,6 +342,29 @@ export function TransactionFormDialog({ open, editing, onOpenChange }: Props) {
                 </select>
               </div>
             </div>
+
+            {form.paymentMethod === 'cartao_credito' && (
+              <div>
+                <label htmlFor="trx-credit-card" className={labelCls}>
+                  Cartão <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="trx-credit-card"
+                  value={form.creditCardId}
+                  onChange={(e) => setForm((p) => ({ ...p, creditCardId: e.target.value }))}
+                  className={selectCls}
+                  required
+                >
+                  <option value="">Selecionar cartão...</option>
+                  {creditCards.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                      {c.lastFourDigits ? ` •••• ${c.lastFourDigits}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>

@@ -36,6 +36,9 @@ const RAW_TRANSACTION = {
   account_id: null,
   destination_account_id: null,
   credit_card_id: null,
+  installment_group_id: null,
+  installment_number: null,
+  installment_total: null,
   created_at: '2026-06-15T12:00:00Z',
   updated_at: '2026-06-15T12:00:00Z',
   subcategory: {
@@ -107,6 +110,25 @@ describe('parseTransactionFromApi', () => {
   it('mapeia credit_card_id preenchido para creditCardId string', () => {
     const result = parseTransactionFromApi({ ...RAW_TRANSACTION, credit_card_id: 'card-uuid' })
     expect(result.creditCardId).toBe('card-uuid')
+  })
+
+  it('mapeia campos de parcelamento nulos (lançamento à vista)', () => {
+    const result = parseTransactionFromApi(RAW_TRANSACTION)
+    expect(result.installmentGroupId).toBeNull()
+    expect(result.installmentNumber).toBeNull()
+    expect(result.installmentTotal).toBeNull()
+  })
+
+  it('mapeia campos de parcelamento preenchidos', () => {
+    const result = parseTransactionFromApi({
+      ...RAW_TRANSACTION,
+      installment_group_id: 'grp-1',
+      installment_number: 3,
+      installment_total: 10,
+    })
+    expect(result.installmentGroupId).toBe('grp-1')
+    expect(result.installmentNumber).toBe(3)
+    expect(result.installmentTotal).toBe(10)
   })
 })
 

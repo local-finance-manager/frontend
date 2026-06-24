@@ -99,6 +99,9 @@ describe('useCreateTransaction', () => {
       accountId: null,
       destinationAccountId: null,
       creditCardId: null,
+      installmentGroupId: null,
+      installmentNumber: null,
+      installmentTotal: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       subcategory: {
@@ -152,6 +155,9 @@ describe('useConfirmTransaction', () => {
       accountId: null,
       destinationAccountId: null,
       creditCardId: null,
+      installmentGroupId: null,
+      installmentNumber: null,
+      installmentTotal: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       subcategory: {
@@ -208,6 +214,9 @@ describe('useUpdateTransaction', () => {
       accountId: null,
       destinationAccountId: null,
       creditCardId: null,
+      installmentGroupId: null,
+      installmentNumber: null,
+      installmentTotal: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       subcategory: {

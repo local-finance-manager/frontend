@@ -158,13 +158,15 @@ describe('usePayInvoice', () => {
 
     const { result } = renderHook(() => usePayInvoice(), { wrapper: makeWrapper() })
 
-    await result.current.mutateAsync({
-      cardId: 'card-1',
-      reference: '2026-07',
+    const input = {
       paymentDate: '2026-07-10',
-    })
+      subcategoryId: 'sub-trf-pgto-fatura',
+      title: null,
+      description: null,
+    }
+    await result.current.mutateAsync({ cardId: 'card-1', reference: '2026-07', input })
 
-    expect(mockPay).toHaveBeenCalledWith('card-1', '2026-07', '2026-07-10')
+    expect(mockPay).toHaveBeenCalledWith('card-1', '2026-07', input)
   })
 })
 

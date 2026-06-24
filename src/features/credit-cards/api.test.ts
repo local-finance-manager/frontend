@@ -202,16 +202,23 @@ describe('fetchMonthlySummary', () => {
 describe('payInvoice', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('envia payment_date e transaction_id: null no body', async () => {
+  it('envia payment_date, subcategory_id, title e description no body', async () => {
     const apiClient = (await import('@/lib/api-client')).default
     const mockPatch = vi.mocked(apiClient.patch)
     mockPatch.mockResolvedValueOnce({ data: { ...RAW_INVOICE, status: 'paga' } })
 
-    await payInvoice('card-1', '2026-07', '2026-07-10')
+    await payInvoice('card-1', '2026-07', {
+      paymentDate: '2026-07-10',
+      subcategoryId: 'sub-trf-pgto-fatura',
+      title: 'Pagamento de Fatura',
+      description: null,
+    })
 
-    expect(mockPatch).toHaveBeenCalledWith(
-      '/credit-cards/card-1/invoices/2026-07/pay',
-      { payment_date: '2026-07-10', transaction_id: null },
-    )
+    expect(mockPatch).toHaveBeenCalledWith('/credit-cards/card-1/invoices/2026-07/pay', {
+      payment_date: '2026-07-10',
+      subcategory_id: 'sub-trf-pgto-fatura',
+      title: 'Pagamento de Fatura',
+      description: null,
+    })
   })
 })

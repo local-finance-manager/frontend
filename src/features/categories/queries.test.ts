@@ -137,7 +137,7 @@ describe('useCreateSubcategory', () => {
     const api = await import('./api')
     const fakeSub = {
       id: 's1', categoryId: 'cat-1', name: 'Restaurante',
-      icon: '', color: '', canBeDeleted: true,
+      icon: '', color: '', canBeDeleted: true, isBalanceAdjustment: false,
       createdAt: new Date(), updatedAt: new Date(),
     }
     vi.mocked(api.createSubcategory).mockResolvedValueOnce(fakeSub)
@@ -246,7 +246,7 @@ describe('useUpdateSubcategory', () => {
     const api = await import('./api')
     const fakeSub = {
       id: 's1', categoryId: 'c1', name: 'Editada',
-      icon: '', color: '', canBeDeleted: true,
+      icon: '', color: '', canBeDeleted: true, isBalanceAdjustment: false,
       createdAt: new Date(), updatedAt: new Date(),
     }
     vi.mocked(api.updateSubcategory).mockResolvedValueOnce(fakeSub)

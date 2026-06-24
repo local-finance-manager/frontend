@@ -37,6 +37,7 @@ const RAW_SUBCATEGORY = {
   icon: 'utensils',
   color: '#16a34a',
   can_be_deleted: true,
+  is_balance_adjustment: false,
   created_at: '2026-01-15T10:00:00Z',
   updated_at: '2026-03-20T14:30:00Z',
 }
@@ -85,6 +86,13 @@ describe('parseSubcategoryFromApi', () => {
     expect(result.categoryId).toBe('cat-1')
     expect(result.name).toBe('Restaurante')
     expect(result.canBeDeleted).toBe(true)
+  })
+
+  it('mapeia is_balance_adjustment para isBalanceAdjustment', () => {
+    expect(parseSubcategoryFromApi(RAW_SUBCATEGORY).isBalanceAdjustment).toBe(false)
+    expect(
+      parseSubcategoryFromApi({ ...RAW_SUBCATEGORY, is_balance_adjustment: true }).isBalanceAdjustment,
+    ).toBe(true)
   })
 })
 

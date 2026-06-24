@@ -16,7 +16,7 @@ import type { TransactionFilters } from './types'
 vi.mock('./api', () => ({
   fetchTransactions: vi.fn().mockResolvedValue({
     data: [],
-    summary: { totalDespesas: 0, totalReceitas: 0, saldoPeriodo: 0, totalPendente: 0, countTotal: 0 },
+    summary: { totalDespesas: 0, totalReceitas: 0, saldoPeriodo: 0, totalPendente: 0, countTotal: 0, saldoInicial: 0, saldoFinal: 0 },
     pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
   }),
   fetchTransaction: vi.fn(),

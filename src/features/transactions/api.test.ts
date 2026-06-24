@@ -149,6 +149,8 @@ describe('fetchTransactions', () => {
           saldoPeriodo: -3500,
           totalPendente: 0,
           countTotal: 1,
+          saldoInicial: 0,
+          saldoFinal: -3500,
         },
         pagination: { page: 1, limit: 20, total: 1, total_pages: 1, sort: 'date', sort_dir: 'desc' },
       },

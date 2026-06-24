@@ -102,6 +102,16 @@ export type CreateCreditCardInput = {
 
 export type UpdateCreditCardInput = CreateCreditCardInput
 
+export type PayInvoiceInput = {
+  paymentDate: string
+  subcategoryId: string
+  title: string | null
+  description: string | null
+}
+
+// Subcategoria-semente (migration 0008) usada como default do pagamento de fatura.
+export const INVOICE_PAYMENT_SUBCATEGORY_ID = 'sub-trf-pgto-fatura'
+
 export const BRAND_LABELS: Record<CreditCardBrand, string> = {
   visa: 'Visa',
   mastercard: 'Mastercard',

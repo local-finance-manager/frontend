@@ -42,7 +42,7 @@ export function Sidebar() {
                 )
               }
             >
-              <Icon size={18} />
+              <Icon size={20} />
               {item.label}
             </NavLink>
           )
@@ -55,7 +55,7 @@ export function Sidebar() {
           onClick={toggleTheme}
           className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-c-text-2 transition-colors hover:bg-c-subtle hover:text-c-text"
         >
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           {theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
         </button>
       </div>

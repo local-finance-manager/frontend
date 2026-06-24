@@ -46,6 +46,8 @@ type ListApiResp = {
     saldoPeriodo: number
     totalPendente: number
     countTotal: number
+    saldoInicial: number
+    saldoFinal: number
   }
   pagination: {
     page: number

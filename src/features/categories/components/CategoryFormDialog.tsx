@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
+import { IconPicker } from '@/components/ui/IconPicker'
 import { toast } from '@/hooks/useToast'
 import { isAppError } from '@/lib/api-client'
 import { useCreateCategory, useUpdateCategory } from '../queries'
@@ -127,15 +128,11 @@ export function CategoryFormDialog({ open, onOpenChange, editing }: CategoryForm
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="cat-icon">Ícone (nome Lucide)</Label>
+              <Label htmlFor="cat-icon">Ícone</Label>
               <div className="flex items-center gap-3">
-                <Input
-                  id="cat-icon"
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                  placeholder="Ex.: home, shopping-cart"
-                  className="flex-1"
-                />
+                <div className="flex-1">
+                  <IconPicker id="cat-icon" value={icon} onChange={setIcon} />
+                </div>
                 <div
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
                   style={{ backgroundColor: color }}

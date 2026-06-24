@@ -27,6 +27,12 @@
     box-sizing: border-box;
   }
 
+  /* Escala base um degrau acima (16 → 17px): texto e espaçamentos rem do Tailwind
+     crescem proporcionalmente, sem hardcode por componente. */
+  html {
+    font-size: 17px;
+  }
+
   body {
     @apply bg-c-bg text-c-text antialiased;
     font-family: 'Inter', system-ui, sans-serif;

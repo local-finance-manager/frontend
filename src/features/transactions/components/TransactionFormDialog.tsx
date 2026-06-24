@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { XIcon } from 'lucide-react'
 import { isAppError } from '@/lib/api-client'
 import { MoneyInput } from '@/components/ui/MoneyInput'
 import { toast } from '@/hooks/useToast'
-import { useSubcategoriesByType } from '@/features/categories/queries'
+import { SubcategoryPicker } from '@/features/categories/components/SubcategoryPicker'
 import { useCreateTransaction, useUpdateTransaction } from '../queries'
 import {
   PAYMENT_METHOD_LABELS,
@@ -42,12 +42,6 @@ type FormState = {
   creditCardId: string
 }
 
-type TaggedSub = {
-  id: string
-  name: string
-  type: TransactionType
-}
-
 function todayString(): string {
   const d = new Date()
   return [
@@ -72,43 +66,12 @@ const DEFAULT_FORM: FormState = {
 export function TransactionFormDialog({ open, editing, onOpenChange, creditCards }: Props) {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
   const [error, setError] = useState<string | null>(null)
-  const [subcategorySearch, setSubcategorySearch] = useState('')
-  const [showSubList, setShowSubList] = useState(false)
+  const [selectedType, setSelectedType] = useState<TransactionType | null>(null)
 
   const createMutation = useCreateTransaction()
   const updateMutation = useUpdateTransaction()
 
-  const subsDespesa = useSubcategoriesByType('despesa')
-  const subsReceita = useSubcategoriesByType('receita')
-  const subsTransferencia = useSubcategoriesByType('transferencia')
-
-  const allSubs = useMemo<TaggedSub[]>(
-    () => [
-      ...(subsDespesa.data ?? []).map((s) => ({ id: s.id, name: s.name, type: 'despesa' as const })),
-      ...(subsReceita.data ?? []).map((s) => ({ id: s.id, name: s.name, type: 'receita' as const })),
-      ...(subsTransferencia.data ?? []).map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: 'transferencia' as const,
-      })),
-    ],
-    [subsDespesa.data, subsReceita.data, subsTransferencia.data],
-  )
-
-  const filteredSubs = useMemo(() => {
-    if (!subcategorySearch.trim()) return allSubs
-    const lower = subcategorySearch.toLowerCase()
-    return allSubs.filter((s) => s.name.toLowerCase().includes(lower))
-  }, [allSubs, subcategorySearch])
-
-  const selectedSub = useMemo(
-    () => allSubs.find((s) => s.id === form.subcategoryId) ?? null,
-    [allSubs, form.subcategoryId],
-  )
-
-  const derivedType: TransactionType | null = editing
-    ? editing.type
-    : selectedSub?.type ?? null
+  const derivedType: TransactionType | null = editing ? editing.type : selectedType
 
   useEffect(() => {
     if (!open) return
@@ -124,13 +87,12 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
         paymentDate: editing.paymentDate ?? '',
         creditCardId: editing.creditCardId ?? '',
       })
-      setSubcategorySearch(editing.subcategory.name)
+      setSelectedType(editing.type)
     } else {
       setForm({ ...DEFAULT_FORM, competenceDate: todayString() })
-      setSubcategorySearch('')
+      setSelectedType(null)
     }
     setError(null)
-    setShowSubList(false)
   }, [open, editing])
 
   function handlePaymentMethodChange(method: PaymentMethod | '') {
@@ -152,12 +114,6 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
       }
       return next
     })
-  }
-
-  function selectSubcategory(id: string, name: string) {
-    setForm((prev) => ({ ...prev, subcategoryId: id }))
-    setSubcategorySearch(name)
-    setShowSubList(false)
   }
 
   const isLoading = createMutation.isPending || updateMutation.isPending
@@ -241,44 +197,20 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
               />
             </div>
 
-            <div className="relative">
+            <div>
               <label htmlFor="trx-subcategory" className={labelCls}>
                 Subcategoria <span className="text-red-500">*</span>
               </label>
-              <input
-                id="trx-subcategory"
-                type="text"
-                placeholder="Buscar subcategoria..."
-                value={subcategorySearch}
-                onChange={(e) => {
-                  setSubcategorySearch(e.target.value)
-                  setShowSubList(true)
-                  if (!e.target.value) setForm((p) => ({ ...p, subcategoryId: '' }))
-                }}
-                onFocus={() => setShowSubList(true)}
-                onBlur={() => setTimeout(() => setShowSubList(false), 150)}
-                className={inputCls}
-                autoComplete="off"
-              />
-              {showSubList && filteredSubs.length > 0 && (
-                <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-c-border bg-c-surface shadow-lg">
-                  {filteredSubs.map((s) => (
-                    <li key={s.id}>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => selectSubcategory(s.id, s.name)}
-                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-c-text hover:bg-c-subtle"
-                      >
-                        <span>{s.name}</span>
-                        <span className="ml-2 text-xs text-c-text-3">
-                          {TRANSACTION_TYPE_LABELS[s.type]}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="mt-1">
+                <SubcategoryPicker
+                  id="trx-subcategory"
+                  value={form.subcategoryId}
+                  onChange={(subcategoryId, _name, type) => {
+                    setForm((p) => ({ ...p, subcategoryId }))
+                    setSelectedType(type)
+                  }}
+                />
+              </div>
               {derivedType && (
                 <p className="mt-1 text-xs text-c-text-3">
                   Tipo:{' '}

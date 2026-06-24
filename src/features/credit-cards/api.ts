@@ -13,6 +13,7 @@ import type {
   CreditCardBrand,
   InvoiceStatus,
   UtilizationLevel,
+  PayInvoiceInput,
 } from './types'
 
 // ── Raw shapes (borda JSON — nunca saem deste arquivo) ───────────────────────
@@ -254,11 +255,16 @@ export async function fetchInvoiceDetail(cardId: string, reference: string): Pro
 export async function payInvoice(
   cardId: string,
   reference: string,
-  paymentDate: string,
+  input: PayInvoiceInput,
 ): Promise<Invoice> {
   const { data } = await apiClient.patch<InvoiceApiResp>(
     `/credit-cards/${cardId}/invoices/${reference}/pay`,
-    { payment_date: paymentDate, transaction_id: null },
+    {
+      payment_date: input.paymentDate,
+      subcategory_id: input.subcategoryId,
+      title: input.title,
+      description: input.description,
+    },
   )
   return parseInvoice(data)
 }

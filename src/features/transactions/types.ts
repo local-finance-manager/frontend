@@ -51,6 +51,8 @@ export type TransactionSummary = {
   saldoPeriodo: number
   totalPendente: number
   countTotal: number
+  saldoInicial: number
+  saldoFinal: number
 }
 
 export type TransactionPagination = {

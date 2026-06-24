@@ -6,6 +6,7 @@ import { formatCurrency, formatDate } from '@/lib/format'
 import { toast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { PageContainer } from '@/components/PageContainer'
 import { useCreditCards } from '@/features/credit-cards/queries'
 import {
   useInstallmentGroup,
@@ -53,25 +54,25 @@ export default function InstallmentGroupDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      <PageContainer>
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-12 animate-pulse rounded-lg bg-c-subtle" />
           ))}
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
   if (isError || !group) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      <PageContainer>
         <p className="text-sm text-red-600">
           {isAppError(error) && error.displayable
             ? error.message
             : 'Erro ao carregar a compra parcelada. Tente novamente.'}
         </p>
-      </div>
+      </PageContainer>
     )
   }
 
@@ -88,7 +89,7 @@ export default function InstallmentGroupDetailPage() {
     : null
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <PageContainer>
       <button
         type="button"
         onClick={() => navigate('/parcelamentos')}
@@ -188,6 +189,6 @@ export default function InstallmentGroupDetailPage() {
         error={deleteError}
         onConfirm={handleDelete}
       />
-    </div>
+    </PageContainer>
   )
 }

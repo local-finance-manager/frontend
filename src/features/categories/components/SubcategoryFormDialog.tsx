@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
+import { IconPicker } from '@/components/ui/IconPicker'
 import { toast } from '@/hooks/useToast'
 import { isAppError } from '@/lib/api-client'
 import { useCreateSubcategory, useUpdateSubcategory } from '../queries'
@@ -125,15 +126,11 @@ export function SubcategoryFormDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="sub-icon">Ícone (nome Lucide)</Label>
+              <Label htmlFor="sub-icon">Ícone</Label>
               <div className="flex items-center gap-3">
-                <Input
-                  id="sub-icon"
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                  placeholder="Ex.: utensils, coffee"
-                  className="flex-1"
-                />
+                <div className="flex-1">
+                  <IconPicker id="sub-icon" value={icon} onChange={setIcon} />
+                </div>
                 <div
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
                   style={{ backgroundColor: color }}

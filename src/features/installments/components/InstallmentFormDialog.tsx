@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { XIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -8,7 +8,7 @@ import { formatCurrency } from '@/lib/format'
 import { MoneyInput } from '@/components/ui/MoneyInput'
 import { toast } from '@/hooks/useToast'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useSubcategoriesByType } from '@/features/categories/queries'
+import { SubcategoryPicker } from '@/features/categories/components/SubcategoryPicker'
 import { usePreviewInstallment, useCreateInstallment } from '../queries'
 import { InstallmentScheduleTable } from './InstallmentScheduleTable'
 import type { CreateInstallmentInput, InstallmentInputMode } from '../types'
@@ -23,6 +23,7 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   creditCards: CreditCardOption[]
+  initialCreditCardId?: string
 }
 
 type FormState = {
@@ -84,34 +85,31 @@ function canPreview(f: FormState): boolean {
   )
 }
 
-export function InstallmentFormDialog({ open, onOpenChange, creditCards }: Props) {
+export function InstallmentFormDialog({
+  open,
+  onOpenChange,
+  creditCards,
+  initialCreditCardId,
+}: Props) {
   const navigate = useNavigate()
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
   const [error, setError] = useState<string | null>(null)
-  const [subcategorySearch, setSubcategorySearch] = useState('')
-  const [showSubList, setShowSubList] = useState(false)
 
-  const subsDespesa = useSubcategoriesByType('despesa')
   const previewMutation = usePreviewInstallment()
   const createMutation = useCreateInstallment()
 
   const { mutate: runPreview, reset: resetPreview } = previewMutation
 
-  const subs = useMemo(() => subsDespesa.data ?? [], [subsDespesa.data])
-  const filteredSubs = useMemo(() => {
-    if (!subcategorySearch.trim()) return subs
-    const lower = subcategorySearch.toLowerCase()
-    return subs.filter((s) => s.name.toLowerCase().includes(lower))
-  }, [subs, subcategorySearch])
-
   useEffect(() => {
     if (!open) return
-    setForm({ ...DEFAULT_FORM, purchaseDate: todayString() })
-    setSubcategorySearch('')
-    setShowSubList(false)
+    setForm({
+      ...DEFAULT_FORM,
+      creditCardId: initialCreditCardId ?? '',
+      purchaseDate: todayString(),
+    })
     setError(null)
     resetPreview()
-  }, [open, resetPreview])
+  }, [open, initialCreditCardId, resetPreview])
 
   // Preview vem do backend (rateio de centavos + ciclo do cartão não são
   // recalculados no front). Debounced para coalescer a digitação.
@@ -123,12 +121,6 @@ export function InstallmentFormDialog({ open, onOpenChange, creditCards }: Props
     }
     runPreview(toInput(debounced))
   }, [debounced, runPreview, resetPreview])
-
-  function selectSubcategory(id: string, name: string) {
-    setForm((p) => ({ ...p, subcategoryId: id }))
-    setSubcategorySearch(name)
-    setShowSubList(false)
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -216,41 +208,19 @@ export function InstallmentFormDialog({ open, onOpenChange, creditCards }: Props
               </select>
             </div>
 
-            <div className="relative">
+            <div>
               <label htmlFor="inst-subcategory" className={labelCls}>
                 Subcategoria <span className="text-red-500">*</span>
               </label>
-              <input
-                id="inst-subcategory"
-                type="text"
-                placeholder="Buscar subcategoria de despesa..."
-                value={subcategorySearch}
-                onChange={(e) => {
-                  setSubcategorySearch(e.target.value)
-                  setShowSubList(true)
-                  if (!e.target.value) setForm((p) => ({ ...p, subcategoryId: '' }))
-                }}
-                onFocus={() => setShowSubList(true)}
-                onBlur={() => setTimeout(() => setShowSubList(false), 150)}
-                className={inputCls}
-                autoComplete="off"
-              />
-              {showSubList && filteredSubs.length > 0 && (
-                <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-c-border bg-c-surface shadow-lg">
-                  {filteredSubs.map((s) => (
-                    <li key={s.id}>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => selectSubcategory(s.id, s.name)}
-                        className="flex w-full items-center px-3 py-2 text-left text-sm text-c-text hover:bg-c-subtle"
-                      >
-                        {s.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="mt-1">
+                <SubcategoryPicker
+                  id="inst-subcategory"
+                  value={form.subcategoryId}
+                  defaultTypes={['despesa']}
+                  placeholder="Buscar subcategoria de despesa..."
+                  onChange={(subcategoryId) => setForm((p) => ({ ...p, subcategoryId }))}
+                />
+              </div>
             </div>
 
             <div>

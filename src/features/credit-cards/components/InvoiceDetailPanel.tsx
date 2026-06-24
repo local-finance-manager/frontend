@@ -10,7 +10,7 @@ import { CategoryBreakdownList } from './CategoryBreakdownList'
 type Props = {
   cardId: string
   reference: string
-  onMarkPaid: (reference: string) => void
+  onMarkPaid: (reference: string, total: number, pendingCount: number) => void
   onUndoPayment: (reference: string) => void
 }
 
@@ -73,10 +73,16 @@ export function InvoiceDetailPanel({ cardId, reference, onMarkPaid, onUndoPaymen
       {(detail.status === 'fechada' || detail.status === 'vencida') && (
         <button
           type="button"
-          onClick={() => onMarkPaid(reference)}
+          onClick={() =>
+            onMarkPaid(
+              reference,
+              detail.total,
+              detail.data.filter((t) => t.status === 'pendente').length,
+            )
+          }
           className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
         >
-          Marcar como paga
+          Registrar Pagamento
         </button>
       )}
 

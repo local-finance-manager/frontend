@@ -22,6 +22,7 @@ export type Subcategory = {
   icon: string
   color: string
   canBeDeleted: boolean
+  isBalanceAdjustment: boolean
   createdAt: Date
   updatedAt: Date
 }

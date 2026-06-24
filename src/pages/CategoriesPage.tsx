@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { PageContainer } from '@/components/PageContainer'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { toast } from '@/hooks/useToast'
 import { isAppError } from '@/lib/api-client'
@@ -90,7 +91,7 @@ export default function CategoriesPage() {
     : null
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <PageContainer>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-c-text">Categorias</h1>
         <Button onClick={() => setCatDialog({ open: true, editing: null })}>
@@ -156,6 +157,6 @@ export default function CategoriesPage() {
         error={deleteError}
         onConfirm={handleConfirmDelete}
       />
-    </div>
+    </PageContainer>
   )
 }

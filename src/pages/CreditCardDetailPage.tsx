@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { isAppError } from '@/lib/api-client'
 import { formatCurrency } from '@/lib/format'
 import { toast } from '@/hooks/useToast'
+import { PageContainer } from '@/components/PageContainer'
 import {
   useCreditCard,
   useInvoices,
@@ -11,7 +12,7 @@ import {
   useUndoPayment,
   useMonthlySummary,
 } from '@/features/credit-cards/queries'
-import { BRAND_LABELS, UTILIZATION_LEVEL_LABELS } from '@/features/credit-cards/types'
+import { BRAND_LABELS, UTILIZATION_LEVEL_LABELS, type PayInvoiceInput } from '@/features/credit-cards/types'
 import { InvoiceList } from '@/features/credit-cards/components/InvoiceList'
 import { InvoiceDetailPanel } from '@/features/credit-cards/components/InvoiceDetailPanel'
 import { MarkInvoicePaidDialog } from '@/features/credit-cards/components/MarkInvoicePaidDialog'
@@ -25,7 +26,9 @@ export default function CreditCardDetailPage() {
   const [markPaidDialog, setMarkPaidDialog] = useState<{
     open: boolean
     reference: string | null
-  }>({ open: false, reference: null })
+    total: number
+    pendingCount: number
+  }>({ open: false, reference: null, total: 0, pendingCount: 0 })
 
   const { data: card, isLoading: cardLoading, isError: cardError, error: cardErr } = useCreditCard(id!)
   const { data: invoices = [], isLoading: invoicesLoading } = useInvoices(id!)
@@ -35,10 +38,22 @@ export default function CreditCardDetailPage() {
   const now = new Date()
   const { data: summary } = useMonthlySummary(id!, now.getFullYear(), now.getMonth() + 1)
 
-  async function handleMarkPaid(reference: string, paymentDate: string): Promise<void> {
-    await payMutation.mutateAsync({ cardId: id!, reference, paymentDate })
-    setMarkPaidDialog({ open: false, reference: null })
-    toast({ title: 'Fatura marcada como paga' })
+  // Seleciona a fatura aberta por default ao carregar (RF-CARDDET-02).
+  useEffect(() => {
+    if (selectedReference || invoices.length === 0) return
+    const open = invoices.find((i) => i.status === 'aberta')
+    setSelectedReference(open?.reference ?? invoices[0]?.reference ?? null)
+  }, [invoices, selectedReference])
+
+  async function handleMarkPaid(reference: string, input: PayInvoiceInput): Promise<void> {
+    const pendingCount = markPaidDialog.pendingCount
+    await payMutation.mutateAsync({ cardId: id!, reference, input })
+    setMarkPaidDialog({ open: false, reference: null, total: 0, pendingCount: 0 })
+    toast({
+      title: pendingCount
+        ? `Fatura paga — ${pendingCount} lançamento${pendingCount !== 1 ? 's' : ''} baixado${pendingCount !== 1 ? 's' : ''}`
+        : 'Fatura registrada como paga',
+    })
   }
 
   async function handleUndoPayment(reference: string) {
@@ -52,30 +67,30 @@ export default function CreditCardDetailPage() {
 
   if (cardLoading) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8">
+      <PageContainer>
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-12 animate-pulse rounded-lg bg-c-subtle" />
           ))}
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
   if (cardError || !card) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8">
+      <PageContainer>
         <p className="text-sm text-red-600">
           {isAppError(cardErr) && cardErr.displayable
             ? cardErr.message
             : 'Erro ao carregar cartão. Tente novamente.'}
         </p>
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <PageContainer>
       <button
         type="button"
         onClick={() => navigate('/cartoes')}
@@ -122,9 +137,18 @@ export default function CreditCardDetailPage() {
           </div>
         </div>
 
-        <p className="mt-3 text-xs text-c-text-3">
-          Melhor dia de compra: <span className="font-medium">dia {card.bestPurchaseDay}</span>
-        </p>
+        <div className="mt-3 flex items-center justify-between">
+          <p className="text-xs text-c-text-3">
+            Melhor dia de compra: <span className="font-medium">dia {card.bestPurchaseDay}</span>
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate(`/parcelamentos?novo=1&cartao=${card.id}`)}
+            className="rounded-md bg-brand-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-600"
+          >
+            Nova compra parcelada
+          </button>
+        </div>
       </div>
 
       {summary && (
@@ -175,7 +199,9 @@ export default function CreditCardDetailPage() {
             <InvoiceDetailPanel
               cardId={id!}
               reference={selectedReference}
-              onMarkPaid={(ref) => setMarkPaidDialog({ open: true, reference: ref })}
+              onMarkPaid={(ref, total, pendingCount) =>
+                setMarkPaidDialog({ open: true, reference: ref, total, pendingCount })
+              }
               onUndoPayment={handleUndoPayment}
             />
           ) : (
@@ -189,10 +215,14 @@ export default function CreditCardDetailPage() {
       <MarkInvoicePaidDialog
         open={markPaidDialog.open}
         reference={markPaidDialog.reference}
+        invoiceTotal={markPaidDialog.total}
+        defaultTitle={
+          markPaidDialog.reference ? `Pagamento de Fatura — ${card.name} ${markPaidDialog.reference}` : ''
+        }
         onOpenChange={(open) => setMarkPaidDialog((s) => ({ ...s, open }))}
         onConfirm={handleMarkPaid}
         isLoading={payMutation.isPending}
       />
-    </div>
+    </PageContainer>
   )
 }

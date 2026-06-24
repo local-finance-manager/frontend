@@ -13,7 +13,8 @@ import {
   undoInvoicePayment,
   fetchMonthlySummary,
 } from './api'
-import type { CreateCreditCardInput, UpdateCreditCardInput } from './types'
+import { transactionKeys } from '@/features/transactions/queries'
+import type { CreateCreditCardInput, UpdateCreditCardInput, PayInvoiceInput } from './types'
 
 export const creditCardKeys = {
   all: ['credit-cards'] as const,
@@ -105,17 +106,19 @@ export function usePayInvoice() {
     mutationFn: ({
       cardId,
       reference,
-      paymentDate,
+      input,
     }: {
       cardId: string
       reference: string
-      paymentDate: string
-    }) => payInvoice(cardId, reference, paymentDate),
+      input: PayInvoiceInput
+    }) => payInvoice(cardId, reference, input),
     onSuccess: (_data, { cardId, reference }) => {
       qc.invalidateQueries({ queryKey: creditCardKeys.lists() })
       qc.invalidateQueries({ queryKey: creditCardKeys.detail(cardId) })
       qc.invalidateQueries({ queryKey: creditCardKeys.invoices(cardId) })
       qc.invalidateQueries({ queryKey: creditCardKeys.invoice(cardId, reference) })
+      // O pagamento cria o lançamento e realiza as compras → invalida lançamentos.
+      qc.invalidateQueries({ queryKey: transactionKeys.lists() })
     },
   })
 }
@@ -130,6 +133,7 @@ export function useUndoPayment() {
       qc.invalidateQueries({ queryKey: creditCardKeys.detail(cardId) })
       qc.invalidateQueries({ queryKey: creditCardKeys.invoices(cardId) })
       qc.invalidateQueries({ queryKey: creditCardKeys.invoice(cardId, reference) })
+      qc.invalidateQueries({ queryKey: transactionKeys.lists() })
     },
   })
 }

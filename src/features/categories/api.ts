@@ -34,6 +34,7 @@ type SubcategoryApiResponse = {
   icon?: string
   color?: string
   can_be_deleted: boolean
+  is_balance_adjustment: boolean
   created_at: string
   updated_at: string
 }
@@ -77,6 +78,7 @@ export function parseSubcategoryFromApi(raw: SubcategoryApiResponse): Subcategor
     icon: raw.icon ?? '',
     color: raw.color ?? '',
     canBeDeleted: raw.can_be_deleted,
+    isBalanceAdjustment: raw.is_balance_adjustment ?? false,
     createdAt: new Date(raw.created_at),
     updatedAt: new Date(raw.updated_at),
   }

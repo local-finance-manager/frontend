@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { PageContainer } from '@/components/PageContainer'
 import { isAppError } from '@/lib/api-client'
 import { useCreditCards } from '@/features/credit-cards/queries'
 import { useInstallmentGroups } from '@/features/installments/queries'
@@ -11,10 +12,27 @@ import { GROUP_STATUS_LABELS, type InstallmentGroupStatus } from '@/features/ins
 
 export default function InstallmentsPage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [formOpen, setFormOpen] = useState(false)
+  const [initialCardId, setInitialCardId] = useState<string | undefined>(undefined)
   const [cardFilter, setCardFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<InstallmentGroupStatus | ''>('')
+
+  // Atalho vindo do detalhe do cartão: ?novo=1&cartao=<id> abre o modal já com o
+  // cartão pré-selecionado. Limpa os params para não reabrir em refresh.
+  useEffect(() => {
+    if (searchParams.get('novo') === '1') {
+      setInitialCardId(searchParams.get('cartao') ?? undefined)
+      setFormOpen(true)
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
+
+  function openNewForm() {
+    setInitialCardId(undefined)
+    setFormOpen(true)
+  }
 
   const { data: cards = [] } = useCreditCards(false)
   const cardNames = useMemo(() => {
@@ -38,10 +56,10 @@ export default function InstallmentsPage() {
     'rounded-md border border-c-border bg-c-surface px-3 py-2 text-sm text-c-text-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <PageContainer>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-c-text">Compras Parceladas</h1>
-        <Button onClick={() => setFormOpen(true)}>
+        <Button onClick={openNewForm}>
           <Plus size={16} />
           Nova compra parcelada
         </Button>
@@ -110,7 +128,12 @@ export default function InstallmentsPage() {
         </div>
       )}
 
-      <InstallmentFormDialog open={formOpen} onOpenChange={setFormOpen} creditCards={cards} />
-    </div>
+      <InstallmentFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        creditCards={cards}
+        initialCreditCardId={initialCardId}
+      />
+    </PageContainer>
   )
 }

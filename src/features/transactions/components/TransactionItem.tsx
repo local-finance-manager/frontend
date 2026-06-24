@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 import { formatCurrency, formatDate } from '@/lib/format'
 import { CategoryIcon } from '@/features/categories/components/CategoryIcon'
@@ -38,6 +39,14 @@ export function TransactionItem({ transaction: t, onEdit, onConfirm, onCancel, o
           )}
         >
           {t.title}
+          {t.installmentTotal != null && t.installmentGroupId && (
+            <Link
+              to={`/parcelamentos/${t.installmentGroupId}`}
+              className="ml-1.5 font-normal text-brand-600 hover:underline dark:text-brand-500"
+            >
+              ({t.installmentNumber}/{t.installmentTotal})
+            </Link>
+          )}
         </p>
         <p className="truncate text-xs text-c-text-3">
           {t.subcategory.name} · {PAYMENT_METHOD_LABELS[t.paymentMethod]}

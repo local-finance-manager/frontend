@@ -30,6 +30,9 @@ type TransactionApiResp = {
   account_id: string | null
   destination_account_id: string | null
   credit_card_id: string | null
+  installment_group_id: string | null
+  installment_number: number | null
+  installment_total: number | null
   created_at: string
   updated_at: string
   subcategory: SubcategoryApiResp
@@ -70,6 +73,9 @@ export function parseTransactionFromApi(raw: TransactionApiResp): Transaction {
     accountId: raw.account_id,
     destinationAccountId: raw.destination_account_id,
     creditCardId: raw.credit_card_id,
+    installmentGroupId: raw.installment_group_id,
+    installmentNumber: raw.installment_number,
+    installmentTotal: raw.installment_total,
     createdAt: new Date(raw.created_at),
     updatedAt: new Date(raw.updated_at),
     subcategory: {
@@ -102,6 +108,7 @@ export async function fetchTransactions(
   if (filters.competenceDateFrom) params.competence_date_from = filters.competenceDateFrom
   if (filters.competenceDateTo) params.competence_date_to = filters.competenceDateTo
   if (filters.search) params.search = filters.search
+  if (filters.installmentGroupId) params.installment_group_id = filters.installmentGroupId
   if (filters.page) params.page = filters.page
 
   const { data } = await apiClient.get<ListApiResp>('/transactions', { params })

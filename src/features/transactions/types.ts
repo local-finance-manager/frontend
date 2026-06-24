@@ -37,6 +37,9 @@ export type Transaction = {
   accountId: string | null
   destinationAccountId: string | null
   creditCardId: string | null
+  installmentGroupId: string | null
+  installmentNumber: number | null
+  installmentTotal: number | null
   createdAt: Date
   updatedAt: Date
   subcategory: SubcategoryInfo
@@ -88,6 +91,7 @@ export type TransactionFilters = {
   competenceDateFrom?: string
   competenceDateTo?: string
   search?: string
+  installmentGroupId?: string
   page?: number
 }
 

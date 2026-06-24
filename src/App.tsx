@@ -4,6 +4,8 @@ import CategoriesPage from '@/pages/CategoriesPage'
 import TransactionsPage from '@/pages/TransactionsPage'
 import CreditCardsPage from '@/pages/CreditCardsPage'
 import CreditCardDetailPage from '@/pages/CreditCardDetailPage'
+import InstallmentsPage from '@/pages/InstallmentsPage'
+import InstallmentGroupDetailPage from '@/pages/InstallmentGroupDetailPage'
 
 export default function App() {
   return (
@@ -13,6 +15,8 @@ export default function App() {
         <Route path="/lancamentos" element={<TransactionsPage />} />
         <Route path="/cartoes" element={<CreditCardsPage />} />
         <Route path="/cartoes/:id" element={<CreditCardDetailPage />} />
+        <Route path="/parcelamentos" element={<InstallmentsPage />} />
+        <Route path="/parcelamentos/:id" element={<InstallmentGroupDetailPage />} />
         <Route path="/categorias" element={<CategoriesPage />} />
         <Route path="*" element={<Navigate to="/lancamentos" replace />} />
       </Route>

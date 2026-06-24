@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Tags, ArrowLeftRight, CreditCard, Wallet, Sun, Moon, type LucideIcon } from 'lucide-react'
+import { Tags, ArrowLeftRight, CreditCard, Layers, Wallet, Sun, Moon, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -12,6 +12,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { to: '/lancamentos', label: 'Lançamentos', icon: ArrowLeftRight },
   { to: '/cartoes', label: 'Cartões', icon: CreditCard },
+  { to: '/parcelamentos', label: 'Parcelamentos', icon: Layers },
   { to: '/categorias', label: 'Categorias', icon: Tags },
 ]
 

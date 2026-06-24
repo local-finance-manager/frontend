@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { XIcon } from 'lucide-react'
 import { isAppError } from '@/lib/api-client'
-import { parseAmountInput, formatCurrencyInput } from '@/lib/format'
+import { MoneyInput } from '@/components/ui/MoneyInput'
 import { toast } from '@/hooks/useToast'
 import { useCreateCreditCard, useUpdateCreditCard } from '../queries'
 import { BRAND_LABELS, type CreditCardBrand, type CreditCardDetail, type CreateCreditCardInput } from '../types'
@@ -18,7 +18,7 @@ type FormState = {
   brand: CreditCardBrand | ''
   lastFourDigits: string
   issuer: string
-  creditLimitInput: string
+  creditLimit: number
   closingDay: string
   dueDay: string
   color: string
@@ -29,7 +29,7 @@ const DEFAULT_FORM: FormState = {
   brand: '',
   lastFourDigits: '',
   issuer: '',
-  creditLimitInput: '',
+  creditLimit: 0,
   closingDay: '',
   dueDay: '',
   color: '',
@@ -50,7 +50,7 @@ export function CreditCardFormDialog({ open, editing, onOpenChange }: Props) {
         brand: editing.brand,
         lastFourDigits: editing.lastFourDigits ?? '',
         issuer: editing.issuer ?? '',
-        creditLimitInput: formatCurrencyInput(editing.creditLimit),
+        creditLimit: editing.creditLimit,
         closingDay: String(editing.closingDay),
         dueDay: String(editing.dueDay),
         color: editing.color ?? '',
@@ -72,7 +72,7 @@ export function CreditCardFormDialog({ open, editing, onOpenChange }: Props) {
       brand: form.brand as CreditCardBrand,
       lastFourDigits: form.lastFourDigits.trim() || null,
       issuer: form.issuer.trim() || null,
-      creditLimit: parseAmountInput(form.creditLimitInput),
+      creditLimit: form.creditLimit,
       closingDay: Number(form.closingDay),
       dueDay: Number(form.dueDay),
       color: form.color || null,
@@ -195,13 +195,10 @@ export function CreditCardFormDialog({ open, editing, onOpenChange }: Props) {
               <label htmlFor="cc-limit" className={labelCls}>
                 Limite (R$) <span className="text-red-500">*</span>
               </label>
-              <input
+              <MoneyInput
                 id="cc-limit"
-                type="text"
-                inputMode="decimal"
-                placeholder="0,00"
-                value={form.creditLimitInput}
-                onChange={(e) => setForm((p) => ({ ...p, creditLimitInput: e.target.value }))}
+                value={form.creditLimit}
+                onValueChange={(creditLimit) => setForm((p) => ({ ...p, creditLimit }))}
                 className={inputCls}
                 required
               />

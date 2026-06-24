@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { XIcon } from 'lucide-react'
 import { isAppError } from '@/lib/api-client'
-import { parseAmountInput, formatCurrencyInput } from '@/lib/format'
+import { MoneyInput } from '@/components/ui/MoneyInput'
 import { toast } from '@/hooks/useToast'
 import { useSubcategoriesByType } from '@/features/categories/queries'
 import { useCreateTransaction, useUpdateTransaction } from '../queries'
@@ -33,7 +33,7 @@ type Props = {
 type FormState = {
   title: string
   description: string
-  amountInput: string
+  amount: number
   subcategoryId: string
   paymentMethod: PaymentMethod | ''
   status: TransactionStatus
@@ -60,7 +60,7 @@ function todayString(): string {
 const DEFAULT_FORM: FormState = {
   title: '',
   description: '',
-  amountInput: '',
+  amount: 0,
   subcategoryId: '',
   paymentMethod: '',
   status: 'pendente',
@@ -116,7 +116,7 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
       setForm({
         title: editing.title,
         description: editing.description ?? '',
-        amountInput: formatCurrencyInput(editing.amount),
+        amount: editing.amount,
         subcategoryId: editing.subcategory.id,
         paymentMethod: editing.paymentMethod,
         status: editing.status,
@@ -169,7 +169,7 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
     const input: CreateTransactionInput = {
       title: form.title.trim(),
       description: form.description.trim() || null,
-      amount: parseAmountInput(form.amountInput),
+      amount: form.amount,
       subcategoryId: form.subcategoryId,
       paymentMethod: form.paymentMethod as PaymentMethod,
       status: form.status,
@@ -291,13 +291,10 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
               <label htmlFor="trx-amount" className={labelCls}>
                 Valor (R$) <span className="text-red-500">*</span>
               </label>
-              <input
+              <MoneyInput
                 id="trx-amount"
-                type="text"
-                inputMode="decimal"
-                placeholder="0,00"
-                value={form.amountInput}
-                onChange={(e) => setForm((p) => ({ ...p, amountInput: e.target.value }))}
+                value={form.amount}
+                onValueChange={(amount) => setForm((p) => ({ ...p, amount }))}
                 className={inputCls}
                 required
               />

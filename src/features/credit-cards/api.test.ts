@@ -222,3 +222,79 @@ describe('payInvoice', () => {
     })
   })
 })
+
+// ── CRUD de cartão (cobertura das funções restantes) ─────────────────────────
+
+describe('credit-cards CRUD/invoices', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('fetchCreditCard busca por id', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    vi.mocked(apiClient.get).mockResolvedValueOnce({ data: RAW_CARD })
+    const { fetchCreditCard } = await import('./api')
+    const c = await fetchCreditCard('card-1')
+    expect(apiClient.get).toHaveBeenCalledWith('/credit-cards/card-1')
+    expect(c.name).toBe('Nubank Roxinho')
+  })
+
+  it('createCreditCard envia snake_case', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    vi.mocked(apiClient.post).mockResolvedValueOnce({ data: RAW_CARD })
+    const { createCreditCard } = await import('./api')
+    await createCreditCard({
+      name: 'X', brand: 'visa', lastFourDigits: '1111', issuer: 'Itau',
+      creditLimit: 100000, closingDay: 5, dueDay: 12, color: '#fff', icon: null,
+    })
+    expect(apiClient.post).toHaveBeenCalledWith('/credit-cards', expect.objectContaining({
+      name: 'X', brand: 'visa', credit_limit: 100000, closing_day: 5, due_day: 12,
+    }))
+  })
+
+  it('updateCreditCard faz PUT', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    vi.mocked(apiClient.put).mockResolvedValueOnce({ data: RAW_CARD })
+    const { updateCreditCard } = await import('./api')
+    await updateCreditCard('card-1', {
+      name: 'Y', brand: 'visa', lastFourDigits: null, issuer: null,
+      creditLimit: 200000, closingDay: 5, dueDay: 12, color: null, icon: null,
+    })
+    expect(apiClient.put).toHaveBeenCalledWith('/credit-cards/card-1', expect.objectContaining({ credit_limit: 200000 }))
+  })
+
+  it('deleteCreditCard / archive / unarchive', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    vi.mocked(apiClient.delete).mockResolvedValue({})
+    vi.mocked(apiClient.patch).mockResolvedValue({})
+    const { deleteCreditCard, archiveCreditCard, unarchiveCreditCard } = await import('./api')
+    await deleteCreditCard('card-1')
+    expect(apiClient.delete).toHaveBeenCalledWith('/credit-cards/card-1')
+    await archiveCreditCard('card-1')
+    expect(apiClient.patch).toHaveBeenCalledWith('/credit-cards/card-1/archive')
+    await unarchiveCreditCard('card-1')
+    expect(apiClient.patch).toHaveBeenCalledWith('/credit-cards/card-1/unarchive')
+  })
+
+  it('fetchInvoiceDetail parseia data + transações', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        ...RAW_INVOICE,
+        data: [{ id: 't1', title: 'Compra', amount: 5000, competence_date: '2026-06-10', payment_date: null, status: 'pendente', subcategory_id: 's1', subcategory_name: 'Mercado', category_id: 'cat-1', category_name: 'Alimentação', category_color: '#27AE60', credit_card_id: 'card-1' }],
+        pagination: { page: 1, limit: 100, total: 1, total_pages: 1 },
+      },
+    })
+    const { fetchInvoiceDetail } = await import('./api')
+    const d = await fetchInvoiceDetail('card-1', '2026-07')
+    expect(apiClient.get).toHaveBeenCalledWith('/credit-cards/card-1/invoices/2026-07')
+    expect(d.data).toHaveLength(1)
+    expect(d.data[0].title).toBe('Compra')
+  })
+
+  it('undoInvoicePayment faz DELETE no pay', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: RAW_INVOICE })
+    const { undoInvoicePayment } = await import('./api')
+    await undoInvoicePayment('card-1', '2026-07')
+    expect(apiClient.delete).toHaveBeenCalledWith('/credit-cards/card-1/invoices/2026-07/pay')
+  })
+})

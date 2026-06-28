@@ -1,5 +1,19 @@
 import { describe, it, expect } from 'vitest'
-import { formatDate, formatCurrency, parseAmountInput, formatCurrencyInput } from './format'
+import {
+  formatDate,
+  formatDateString,
+  formatCurrency,
+  parseAmountInput,
+  formatCurrencyInput,
+} from './format'
+
+describe('formatDateString', () => {
+  it('formata "YYYY-MM-DD" para dd/MM/yyyy sem deslocar o dia (BRT)', () => {
+    expect(formatDateString('2026-06-12')).toBe('12/06/2026')
+    expect(formatDateString('2026-01-01')).toBe('01/01/2026')
+    expect(formatDateString('2026-12-31')).toBe('31/12/2026')
+  })
+})
 
 describe('formatDate', () => {
   it('formata data no padrão dd/MM/yyyy por padrão', () => {

@@ -18,17 +18,16 @@ export default mergeConfig(viteConfig, defineConfig({
         'src/test/**',
         // Arquivos de teste não são código de produção
         'src/**/*.test.{ts,tsx}',
-        // Primitivos UI e componentes presentacionais sem lógica de negócio
-        'src/components/ui/**',
-        'src/components/Layout.tsx',
-        'src/components/Sidebar.tsx',
-        // Página fina — apenas composição de features
+        // Componentes presentacionais (incl. gráficos/dialogs) — a lógica vive em
+        // hooks/queries/lib, que SÃO cobertos. Convenção uniforme em todas as features.
+        'src/components/**',
+        'src/features/**/components/**',
+        // Páginas finas — apenas composição de features
         'src/pages/**',
-        // Componentes presentacionais — lógica está nos hooks/queries
-        'src/features/categories/components/**',
-        'src/features/transactions/components/**',
-        // Hook de URL params — depende de react-router useSearchParams
+        // Hooks de "fiação" de UI (compõem componentes / dependem de DOM-router)
+        'src/features/transactions/hooks/useTransactionActions.tsx',
         'src/features/transactions/hooks/useTransactionFilters.ts',
+        'src/hooks/useTheme.ts',
       ],
       thresholds: {
         lines: 85,

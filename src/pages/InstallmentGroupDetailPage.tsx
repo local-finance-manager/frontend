@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { isAppError } from '@/lib/api-client'
-import { formatCurrency, formatDate } from '@/lib/format'
+import { formatCurrency, formatDateString } from '@/lib/format'
 import { toast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -104,7 +104,7 @@ export default function InstallmentGroupDetailPage() {
           <div className="min-w-0">
             <h1 className="text-xl font-bold text-c-text">{group.title}</h1>
             <p className="text-sm text-c-text-3">
-              {cardName} · {formatDate(new Date(group.purchaseDate + 'T12:00:00'))}
+              {cardName} · {formatDateString(group.purchaseDate)}
             </p>
             {group.description && <p className="mt-1 text-sm text-c-text-2">{group.description}</p>}
           </div>

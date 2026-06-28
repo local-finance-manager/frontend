@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
-import { formatCurrency, formatDate } from '@/lib/format'
+import { formatCurrency, formatDateString } from '@/lib/format'
 import { CategoryIcon } from '@/features/categories/components/CategoryIcon'
 import { StatusBadge } from './StatusBadge'
 import { PAYMENT_METHOD_LABELS, type Transaction } from '../types'
@@ -55,7 +55,7 @@ export function TransactionItem({ transaction: t, onEdit, onConfirm, onCancel, o
 
       <div className="hidden text-right sm:block">
         <p className="text-xs text-c-text-3">
-          {formatDate(new Date(t.competenceDate + 'T12:00:00'))}
+          {formatDateString(t.competenceDate)}
         </p>
       </div>
 

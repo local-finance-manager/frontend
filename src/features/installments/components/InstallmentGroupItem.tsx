@@ -1,4 +1,4 @@
-import { formatCurrency, formatDate } from '@/lib/format'
+import { formatCurrency, formatDateString } from '@/lib/format'
 import { InstallmentStatusBadge } from './InstallmentStatusBadge'
 import type { InstallmentGroupSummary } from '../types'
 
@@ -22,7 +22,7 @@ export function InstallmentGroupItem({ group, cardName, onClick }: Props) {
         </div>
         <p className="truncate text-xs text-c-text-3">
           {cardName} · {group.paidCount}/{group.installmentsCount} pagas ·{' '}
-          {formatDate(new Date(group.purchaseDate + 'T12:00:00'))}
+          {formatDateString(group.purchaseDate)}
         </p>
       </div>
 

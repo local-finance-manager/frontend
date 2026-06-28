@@ -1,7 +1,5 @@
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { isAppError } from '@/lib/api-client'
-import { formatCurrency } from '@/lib/format'
+import { formatCurrency, formatDateString } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useInvoiceDetail } from '../queries'
 import { INVOICE_STATUS_LABELS, type InvoiceStatus } from '../types'
@@ -64,7 +62,8 @@ export function InvoiceDetailPanel({ cardId, reference, onMarkPaid, onUndoPaymen
           </span>
         </div>
         <p className="mt-1 text-xs text-c-text-3">
-          {detail.cycleStart} – {detail.closingDate} · Vence em {detail.dueDate}
+          {formatDateString(detail.cycleStart)} – {formatDateString(detail.closingDate)} · Vence em{' '}
+          {formatDateString(detail.dueDate)}
         </p>
         <p className="mt-2 text-2xl font-bold text-c-text">{formatCurrency(detail.total)}</p>
         <p className="text-xs text-c-text-3">{detail.count} lançamento{detail.count !== 1 ? 's' : ''}</p>
@@ -89,12 +88,7 @@ export function InvoiceDetailPanel({ cardId, reference, onMarkPaid, onUndoPaymen
       {detail.status === 'paga' && detail.payment && (
         <div className="flex items-center justify-between rounded-md bg-green-50 px-3 py-2 dark:bg-green-900/20">
           <p className="text-sm text-green-700 dark:text-green-400">
-            Paga em{' '}
-            {format(
-              new Date(detail.payment.paymentDate + 'T12:00:00'),
-              'dd/MM/yyyy',
-              { locale: ptBR },
-            )}
+            Paga em {formatDateString(detail.payment.paymentDate)}
           </p>
           <button
             type="button"
@@ -132,9 +126,7 @@ export function InvoiceDetailPanel({ cardId, reference, onMarkPaid, onUndoPaymen
                     <td className="py-2 pr-3 text-c-text">{t.title}</td>
                     <td className="py-2 pr-3 text-c-text-3">{t.subcategoryName}</td>
                     <td className="py-2 pr-3 text-c-text-3">
-                      {format(new Date(t.competenceDate + 'T12:00:00'), 'dd/MM', {
-                        locale: ptBR,
-                      })}
+                      {formatDateString(t.competenceDate)}
                     </td>
                     <td className="py-2 text-right text-c-text">{formatCurrency(t.amount)}</td>
                   </tr>

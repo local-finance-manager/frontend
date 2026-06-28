@@ -5,6 +5,12 @@ export function formatDate(date: Date, pattern = 'dd/MM/yyyy'): string {
   return format(date, pattern, { locale: ptBR })
 }
 
+// Formata uma data ISO "YYYY-MM-DD" (sem timezone) no padrão do projeto dd/MM/yyyy.
+// O sufixo T12:00:00 evita que a meia-noite UTC caia no dia anterior em BRT.
+export function formatDateString(isoDate: string): string {
+  return formatDate(new Date(isoDate + 'T12:00:00'))
+}
+
 export function formatCurrency(centavos: number): string {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',

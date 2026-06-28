@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { formatCurrency } from '@/lib/format'
+import { formatCurrency, formatDateString } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { INVOICE_STATUS_LABELS, type Invoice, type InvoiceStatus } from '../types'
 
@@ -47,7 +47,7 @@ function InvoiceRow({
       </div>
       <div className="mt-1 flex items-center justify-between text-xs text-c-text-3">
         <span>
-          {inv.cycleStart} – {inv.closingDate}
+          {formatDateString(inv.cycleStart)} – {formatDateString(inv.closingDate)}
         </span>
         <span>
           {inv.count} lançamento{inv.count !== 1 ? 's' : ''}

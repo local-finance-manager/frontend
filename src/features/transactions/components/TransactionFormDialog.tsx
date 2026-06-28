@@ -23,11 +23,19 @@ type CreditCardOption = {
   lastFourDigits: string | null
 }
 
+// Pré-preenchimento ao abrir um NOVO lançamento (ex.: "compra à vista" na tela do
+// cartão já vem com cartão de crédito + cartão selecionado).
+export type TransactionPrefill = {
+  paymentMethod?: PaymentMethod
+  creditCardId?: string
+}
+
 type Props = {
   open: boolean
   editing: Transaction | null
   onOpenChange: (open: boolean) => void
   creditCards: CreditCardOption[]
+  prefill?: TransactionPrefill
 }
 
 type FormState = {
@@ -63,7 +71,7 @@ const DEFAULT_FORM: FormState = {
   creditCardId: '',
 }
 
-export function TransactionFormDialog({ open, editing, onOpenChange, creditCards }: Props) {
+export function TransactionFormDialog({ open, editing, onOpenChange, creditCards, prefill }: Props) {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
   const [error, setError] = useState<string | null>(null)
   const [selectedType, setSelectedType] = useState<TransactionType | null>(null)
@@ -89,11 +97,17 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
       })
       setSelectedType(editing.type)
     } else {
-      setForm({ ...DEFAULT_FORM, competenceDate: todayString() })
+      setForm({
+        ...DEFAULT_FORM,
+        competenceDate: todayString(),
+        paymentMethod: prefill?.paymentMethod ?? DEFAULT_FORM.paymentMethod,
+        creditCardId: prefill?.creditCardId ?? DEFAULT_FORM.creditCardId,
+      })
       setSelectedType(null)
     }
     setError(null)
-  }, [open, editing])
+    // prefill por valores primitivos (evita re-disparo por identidade de objeto)
+  }, [open, editing, prefill?.paymentMethod, prefill?.creditCardId])
 
   function handlePaymentMethodChange(method: PaymentMethod | '') {
     setForm((prev) => ({

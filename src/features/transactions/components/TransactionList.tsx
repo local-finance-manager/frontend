@@ -3,21 +3,11 @@ import type { Transaction, TransactionListResult } from '../types'
 
 type Props = {
   result: TransactionListResult
-  onEdit: (t: Transaction) => void
-  onConfirm: (t: Transaction) => void
-  onCancel: (t: Transaction) => void
-  onDelete: (t: Transaction) => void
+  onSelect: (t: Transaction) => void
   onPageChange: (page: number) => void
 }
 
-export function TransactionList({
-  result,
-  onEdit,
-  onConfirm,
-  onCancel,
-  onDelete,
-  onPageChange,
-}: Props) {
+export function TransactionList({ result, onSelect, onPageChange }: Props) {
   const { data, pagination } = result
 
   if (data.length === 0) {
@@ -31,14 +21,7 @@ export function TransactionList({
   return (
     <div className="space-y-2">
       {data.map((t) => (
-        <TransactionItem
-          key={t.id}
-          transaction={t}
-          onEdit={onEdit}
-          onConfirm={onConfirm}
-          onCancel={onCancel}
-          onDelete={onDelete}
-        />
+        <TransactionItem key={t.id} transaction={t} onSelect={onSelect} />
       ))}
 
       {pagination.totalPages > 1 && (

@@ -324,3 +324,21 @@ describe('deleteTransaction', () => {
     expect(mockDelete).toHaveBeenCalledWith('/transactions/trx-1')
   })
 })
+
+// ── cancelTransaction ─────────────────────────────────────────────────────────
+
+describe('cancelTransaction', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('chama PATCH /transactions/:id/cancel (sem body)', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    const mockPatch = vi.mocked(apiClient.patch)
+    mockPatch.mockResolvedValueOnce({ data: RAW_TRANSACTION })
+
+    const { cancelTransaction } = await import('./api')
+    const result = await cancelTransaction('trx-1')
+
+    expect(mockPatch).toHaveBeenCalledWith('/transactions/trx-1/cancel')
+    expect(result.id).toBe(RAW_TRANSACTION.id)
+  })
+})

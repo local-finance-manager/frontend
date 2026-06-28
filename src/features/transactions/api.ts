@@ -182,6 +182,11 @@ export async function confirmTransaction(
   return parseTransactionFromApi(data)
 }
 
+export async function cancelTransaction(id: string): Promise<Transaction> {
+  const { data } = await apiClient.patch<TransactionApiResp>(`/transactions/${id}/cancel`)
+  return parseTransactionFromApi(data)
+}
+
 export async function deleteTransaction(id: string): Promise<void> {
   await apiClient.delete(`/transactions/${id}`)
 }

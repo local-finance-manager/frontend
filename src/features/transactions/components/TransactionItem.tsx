@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Layers } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { formatCurrency, formatDateString } from '@/lib/format'
 import { CategoryIcon } from '@/features/categories/components/CategoryIcon'
@@ -7,20 +7,18 @@ import { PAYMENT_METHOD_LABELS, type Transaction } from '../types'
 
 type Props = {
   transaction: Transaction
-  onEdit: (t: Transaction) => void
-  onConfirm: (t: Transaction) => void
-  onCancel: (t: Transaction) => void
-  onDelete: (t: Transaction) => void
+  onSelect: (t: Transaction) => void
 }
 
-export function TransactionItem({ transaction: t, onEdit, onConfirm, onCancel, onDelete }: Props) {
+export function TransactionItem({ transaction: t, onSelect }: Props) {
   const isCanceled = t.status === 'cancelado'
-  const isPending = t.status === 'pendente'
 
   return (
-    <div
+    <button
+      type="button"
+      onClick={() => onSelect(t)}
       className={cn(
-        'flex items-center gap-3 rounded-lg bg-c-surface p-3 shadow-sm',
+        'flex w-full items-center gap-3 rounded-lg bg-c-surface p-3 text-left shadow-sm transition-colors hover:bg-c-subtle focus:outline-none focus:ring-2 focus:ring-blue-500',
         isCanceled && 'opacity-50',
       )}
     >
@@ -32,20 +30,13 @@ export function TransactionItem({ transaction: t, onEdit, onConfirm, onCancel, o
       </div>
 
       <div className="min-w-0 flex-1">
-        <p
-          className={cn(
-            'truncate text-sm font-medium text-c-text',
-            isCanceled && 'line-through',
-          )}
-        >
-          {t.title}
-          {t.installmentTotal != null && t.installmentGroupId && (
-            <Link
-              to={`/parcelamentos/${t.installmentGroupId}`}
-              className="ml-1.5 font-normal text-brand-600 hover:underline dark:text-brand-500"
-            >
-              ({t.installmentNumber}/{t.installmentTotal})
-            </Link>
+        <p className={cn('flex items-center gap-1.5 truncate text-sm font-medium text-c-text', isCanceled && 'line-through')}>
+          <span className="truncate">{t.title}</span>
+          {t.installmentTotal != null && (
+            <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-brand-50 px-1.5 py-0.5 text-[11px] font-normal text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
+              <Layers size={11} />
+              {t.installmentNumber}/{t.installmentTotal}
+            </span>
           )}
         </p>
         <p className="truncate text-xs text-c-text-3">
@@ -54,9 +45,7 @@ export function TransactionItem({ transaction: t, onEdit, onConfirm, onCancel, o
       </div>
 
       <div className="hidden text-right sm:block">
-        <p className="text-xs text-c-text-3">
-          {formatDateString(t.competenceDate)}
-        </p>
+        <p className="text-xs text-c-text-3">{formatDateString(t.competenceDate)}</p>
       </div>
 
       <div className="text-right">
@@ -72,41 +61,6 @@ export function TransactionItem({ transaction: t, onEdit, onConfirm, onCancel, o
         </p>
         <StatusBadge status={t.status} />
       </div>
-
-      <div className="flex flex-shrink-0 gap-1">
-        {isPending && (
-          <button
-            type="button"
-            onClick={() => onConfirm(t)}
-            className="rounded px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20"
-          >
-            Confirmar
-          </button>
-        )}
-        {!isCanceled && (
-          <button
-            type="button"
-            onClick={() => onCancel(t)}
-            className="rounded px-2 py-1 text-xs text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20"
-          >
-            Cancelar
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={() => onEdit(t)}
-          className="rounded px-2 py-1 text-xs text-c-text-2 hover:bg-c-subtle"
-        >
-          Editar
-        </button>
-        <button
-          type="button"
-          onClick={() => onDelete(t)}
-          className="rounded px-2 py-1 text-xs text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-        >
-          Excluir
-        </button>
-      </div>
-    </div>
+    </button>
   )
 }

@@ -1,9 +1,16 @@
 import { useState, useMemo, useEffect } from 'react'
 import { cn } from '@/lib/cn'
-import { useSubcategoriesByType } from '../queries'
+import { useSubcategoriesByType, useCategories } from '../queries'
 import type { CategoryType } from '../types'
 
-type TaggedSub = { id: string; name: string; type: CategoryType }
+type TaggedSub = {
+  id: string
+  name: string
+  type: CategoryType
+  categoryId: string
+  categoryName: string
+  categoryColor: string
+}
 
 type Props = {
   value: string
@@ -35,19 +42,34 @@ export function SubcategoryPicker({
   const subsDespesa = useSubcategoriesByType('despesa')
   const subsReceita = useSubcategoriesByType('receita')
   const subsTransferencia = useSubcategoriesByType('transferencia')
+  const categories = useCategories()
 
-  const allSubs = useMemo<TaggedSub[]>(
-    () => [
-      ...(subsDespesa.data ?? []).map((s) => ({ id: s.id, name: s.name, type: 'despesa' as const })),
-      ...(subsReceita.data ?? []).map((s) => ({ id: s.id, name: s.name, type: 'receita' as const })),
-      ...(subsTransferencia.data ?? []).map((s) => ({
+  // categoryId → { name, color } para mostrar a categoria de cada subcategoria
+  // (subcategorias podem ter nomes iguais/parecidos em categorias diferentes).
+  const catMap = useMemo(() => {
+    const m = new Map<string, { name: string; color: string }>()
+    for (const c of categories.data ?? []) m.set(c.id, { name: c.name, color: c.color })
+    return m
+  }, [categories.data])
+
+  const allSubs = useMemo<TaggedSub[]>(() => {
+    const tag = (type: CategoryType) => (s: { id: string; name: string; categoryId: string }) => {
+      const cat = catMap.get(s.categoryId)
+      return {
         id: s.id,
         name: s.name,
-        type: 'transferencia' as const,
-      })),
-    ],
-    [subsDespesa.data, subsReceita.data, subsTransferencia.data],
-  )
+        type,
+        categoryId: s.categoryId,
+        categoryName: cat?.name ?? '',
+        categoryColor: cat?.color || '#9ca3af',
+      }
+    }
+    return [
+      ...(subsDespesa.data ?? []).map(tag('despesa')),
+      ...(subsReceita.data ?? []).map(tag('receita')),
+      ...(subsTransferencia.data ?? []).map(tag('transferencia')),
+    ]
+  }, [subsDespesa.data, subsReceita.data, subsTransferencia.data, catMap])
 
   // Reflete a subcategoria selecionada externamente (ex.: edição ou pré-seleção)
   // no texto de busca assim que os dados carregarem.
@@ -60,7 +82,10 @@ export function SubcategoryPicker({
     const byType = activeTypes.size === 0 ? allSubs : allSubs.filter((s) => activeTypes.has(s.type))
     const q = search.trim().toLowerCase()
     if (!q) return byType
-    return byType.filter((s) => s.name.toLowerCase().includes(q))
+    // busca também pela categoria (ex.: digitar "aliment" acha subs de Alimentação)
+    return byType.filter(
+      (s) => s.name.toLowerCase().includes(q) || s.categoryName.toLowerCase().includes(q),
+    )
   }, [allSubs, activeTypes, search])
 
   function toggleType(t: CategoryType) {
@@ -118,18 +143,40 @@ export function SubcategoryPicker({
         className="block w-full rounded-md border border-c-border bg-c-surface px-3 py-2 text-sm text-c-text placeholder:text-c-text-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
+      {/* Situa o usuário sobre a categoria da subcategoria selecionada */}
+      {selectedSub && !showList && selectedSub.categoryName && (
+        <p className="mt-1 flex items-center gap-1.5 text-xs text-c-text-3">
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: selectedSub.categoryColor }}
+          />
+          em <span className="font-medium text-c-text-2">{selectedSub.categoryName}</span>
+        </p>
+      )}
+
       {showList && filtered.length > 0 && (
-        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-c-border bg-c-surface shadow-lg">
+        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-c-border bg-c-surface shadow-lg">
           {filtered.map((s) => (
             <li key={s.id}>
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => select(s)}
-                className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-c-text hover:bg-c-subtle"
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-c-subtle"
               >
-                <span>{s.name}</span>
-                <span className="ml-2 text-xs text-c-text-3">{TYPE_LABELS[s.type]}</span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm text-c-text">{s.name}</span>
+                  {s.categoryName && (
+                    <span className="mt-0.5 flex items-center gap-1.5 text-xs text-c-text-3">
+                      <span
+                        className="inline-block h-2 w-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: s.categoryColor }}
+                      />
+                      <span className="truncate">{s.categoryName}</span>
+                    </span>
+                  )}
+                </span>
+                <span className="shrink-0 text-xs text-c-text-3">{TYPE_LABELS[s.type]}</span>
               </button>
             </li>
           ))}

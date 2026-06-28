@@ -10,6 +10,7 @@ type Props = {
   reference: string
   onMarkPaid: (reference: string, total: number, pendingCount: number) => void
   onUndoPayment: (reference: string) => void
+  onSelectTransaction: (id: string) => void
 }
 
 const statusBadgeCls: Record<InvoiceStatus, string> = {
@@ -20,7 +21,13 @@ const statusBadgeCls: Record<InvoiceStatus, string> = {
   vencida: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 }
 
-export function InvoiceDetailPanel({ cardId, reference, onMarkPaid, onUndoPayment }: Props) {
+export function InvoiceDetailPanel({
+  cardId,
+  reference,
+  onMarkPaid,
+  onUndoPayment,
+  onSelectTransaction,
+}: Props) {
   const { data: detail, isLoading, isError, error } = useInvoiceDetail(cardId, reference)
 
   if (isLoading) {
@@ -122,7 +129,11 @@ export function InvoiceDetailPanel({ cardId, reference, onMarkPaid, onUndoPaymen
               </thead>
               <tbody>
                 {detail.data.map((t) => (
-                  <tr key={t.id} className="border-b border-c-border last:border-0">
+                  <tr
+                    key={t.id}
+                    onClick={() => onSelectTransaction(t.id)}
+                    className="cursor-pointer border-b border-c-border last:border-0 hover:bg-c-subtle"
+                  >
                     <td className="py-2 pr-3 text-c-text">{t.title}</td>
                     <td className="py-2 pr-3 text-c-text-3">{t.subcategoryName}</td>
                     <td className="py-2 pr-3 text-c-text-3">

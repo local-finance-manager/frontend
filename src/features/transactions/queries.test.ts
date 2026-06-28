@@ -23,6 +23,7 @@ vi.mock('./api', () => ({
   createTransaction: vi.fn(),
   updateTransaction: vi.fn(),
   confirmTransaction: vi.fn(),
+  cancelTransaction: vi.fn(),
   deleteTransaction: vi.fn(),
 }))
 

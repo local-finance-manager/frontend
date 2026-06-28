@@ -3,7 +3,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useDebounce } from '@/hooks/useDebounce'
-import type { TransactionFilters as Filters } from '../types'
+import { PAYMENT_METHOD_LABELS, type TransactionFilters as Filters } from '../types'
 
 type Props = {
   filters: Filters
@@ -72,6 +72,19 @@ export function TransactionFilters({ filters, onFilterChange, onNavigateMonth }:
         <option value="pendente">Pendente</option>
         <option value="realizado">Realizado</option>
         <option value="cancelado">Cancelado</option>
+      </select>
+
+      <select
+        value={filters.paymentMethod ?? ''}
+        onChange={(e) => onFilterChange('paymentMethod', e.target.value || undefined)}
+        className="rounded-lg border border-c-border bg-c-surface px-3 py-2 text-sm text-c-text-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Forma de pagamento</option>
+        {Object.entries(PAYMENT_METHOD_LABELS).map(([value, label]) => (
+          <option key={value} value={value}>
+            {label}
+          </option>
+        ))}
       </select>
 
       <input

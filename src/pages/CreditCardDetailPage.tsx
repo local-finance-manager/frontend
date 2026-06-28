@@ -7,11 +7,13 @@ import { toast } from '@/hooks/useToast'
 import { PageContainer } from '@/components/PageContainer'
 import {
   useCreditCard,
+  useCreditCards,
   useInvoices,
   usePayInvoice,
   useUndoPayment,
   useMonthlySummary,
 } from '@/features/credit-cards/queries'
+import { useTransactionActions } from '@/features/transactions/hooks/useTransactionActions'
 import { BRAND_LABELS, UTILIZATION_LEVEL_LABELS, type PayInvoiceInput } from '@/features/credit-cards/types'
 import { InvoiceList } from '@/features/credit-cards/components/InvoiceList'
 import { InvoiceDetailPanel } from '@/features/credit-cards/components/InvoiceDetailPanel'
@@ -32,6 +34,8 @@ export default function CreditCardDetailPage() {
 
   const { data: card, isLoading: cardLoading, isError: cardError, error: cardErr } = useCreditCard(id!)
   const { data: invoices = [], isLoading: invoicesLoading } = useInvoices(id!)
+  const { data: creditCards = [] } = useCreditCards(false)
+  const actions = useTransactionActions(creditCards)
   const payMutation = usePayInvoice()
   const undoMutation = useUndoPayment()
 
@@ -141,13 +145,24 @@ export default function CreditCardDetailPage() {
           <p className="text-xs text-c-text-3">
             Melhor dia de compra: <span className="font-medium">dia {card.bestPurchaseDay}</span>
           </p>
-          <button
-            type="button"
-            onClick={() => navigate(`/parcelamentos?novo=1&cartao=${card.id}`)}
-            className="rounded-md bg-brand-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-600"
-          >
-            Nova compra parcelada
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                actions.openNew({ paymentMethod: 'cartao_credito', creditCardId: card.id })
+              }
+              className="rounded-md border border-brand-500 px-3 py-1.5 text-sm font-medium text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-900/20"
+            >
+              Nova compra à vista
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(`/parcelamentos?novo=1&cartao=${card.id}`)}
+              className="rounded-md bg-brand-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-600"
+            >
+              Nova compra parcelada
+            </button>
+          </div>
         </div>
       </div>
 
@@ -203,6 +218,7 @@ export default function CreditCardDetailPage() {
                 setMarkPaidDialog({ open: true, reference: ref, total, pendingCount })
               }
               onUndoPayment={handleUndoPayment}
+              onSelectTransaction={actions.openDetail}
             />
           ) : (
             <p className="py-12 text-center text-sm text-c-text-3">
@@ -223,6 +239,8 @@ export default function CreditCardDetailPage() {
         onConfirm={handleMarkPaid}
         isLoading={payMutation.isPending}
       />
+
+      {actions.dialogs}
     </PageContainer>
   )
 }

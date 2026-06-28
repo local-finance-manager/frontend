@@ -1,5 +1,17 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Tags, ArrowLeftRight, CreditCard, Layers, Wallet, Sun, Moon, type LucideIcon } from 'lucide-react'
+import {
+  Tags,
+  ArrowLeftRight,
+  CreditCard,
+  Layers,
+  Wallet,
+  BarChart3,
+  ChevronRight,
+  Sun,
+  Moon,
+  type LucideIcon,
+} from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -16,8 +28,24 @@ const navItems: NavItem[] = [
   { to: '/categorias', label: 'Categorias', icon: Tags },
 ]
 
+const reportSubItems = [
+  { to: '/relatorios/mensal', label: 'Mensal' },
+  { to: '/relatorios/trimestral', label: 'Trimestral' },
+  { to: '/relatorios/semestral', label: 'Semestral' },
+  { to: '/relatorios/anual', label: 'Anual' },
+]
+
+const linkCls = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+    isActive
+      ? 'bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-500'
+      : 'text-c-text-2 hover:bg-c-subtle hover:text-c-text',
+  )
+
 export function Sidebar() {
   const { theme, toggleTheme } = useTheme()
+  const [reportsOpen, setReportsOpen] = useState(true)
 
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col border-r border-c-border bg-c-surface">
@@ -26,27 +54,36 @@ export function Sidebar() {
         <span className="text-lg font-bold text-c-text">Finanças</span>
       </div>
 
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
         {navItems.map((item) => {
           const Icon = item.icon
           return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-500'
-                    : 'text-c-text-2 hover:bg-c-subtle hover:text-c-text',
-                )
-              }
-            >
+            <NavLink key={item.to} to={item.to} className={linkCls}>
               <Icon size={20} />
               {item.label}
             </NavLink>
           )
         })}
+
+        {/* Relatórios com submenus (RF-REL-01) */}
+        <button
+          type="button"
+          onClick={() => setReportsOpen((o) => !o)}
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-c-text-2 transition-colors hover:bg-c-subtle hover:text-c-text"
+        >
+          <BarChart3 size={20} />
+          <span className="flex-1 text-left">Relatórios</span>
+          <ChevronRight size={16} className={cn('transition-transform', reportsOpen && 'rotate-90')} />
+        </button>
+        {reportsOpen && (
+          <div className="ml-4 space-y-1 border-l border-c-border pl-3">
+            {reportSubItems.map((item) => (
+              <NavLink key={item.to} to={item.to} className={linkCls}>
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
+        )}
       </nav>
 
       <div className="border-t border-c-border p-3">

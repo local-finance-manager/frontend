@@ -3,7 +3,9 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { XIcon } from 'lucide-react'
 import { isAppError } from '@/lib/api-client'
 import { MoneyInput } from '@/components/ui/MoneyInput'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { toast } from '@/hooks/useToast'
+import { fetchLockOnce } from '@/features/reports/queries'
 import { SubcategoryPicker } from '@/features/categories/components/SubcategoryPicker'
 import { useCreateTransaction, useUpdateTransaction } from '../queries'
 import {
@@ -75,6 +77,11 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
   const [error, setError] = useState<string | null>(null)
   const [selectedType, setSelectedType] = useState<TransactionType | null>(null)
+  // Aviso de mês fechado-ajustável (RF-REL-08): segura o input até o usuário confirmar.
+  const [adjustWarn, setAdjustWarn] = useState<{ open: boolean; input: CreateTransactionInput | null }>({
+    open: false,
+    input: null,
+  })
 
   const createMutation = useCreateTransaction()
   const updateMutation = useUpdateTransaction()
@@ -132,6 +139,27 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
 
   const isLoading = createMutation.isPending || updateMutation.isPending
 
+  async function doSubmit(input: CreateTransactionInput) {
+    try {
+      if (editing) {
+        await updateMutation.mutateAsync({ id: editing.id, input })
+        toast({ title: 'Lançamento atualizado' })
+      } else {
+        await createMutation.mutateAsync(input)
+        toast({ title: 'Lançamento criado' })
+      }
+      setAdjustWarn({ open: false, input: null })
+      onOpenChange(false)
+    } catch (err) {
+      setAdjustWarn({ open: false, input: null })
+      if (isAppError(err) && err.displayable) {
+        setError(err.message) // inclui o bloqueio de mês fechado-bloqueado (RF-REL-10)
+      } else {
+        setError('Algo deu errado. Tente novamente.')
+      }
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -151,22 +179,22 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
         form.paymentMethod === 'cartao_credito' && form.creditCardId ? form.creditCardId : null,
     }
 
+    // RF-REL-08: se a competência cair em mês fechado-ajustável (origem e/ou destino),
+    // avisa que a alteração recalculará o relatório antes de prosseguir.
+    const refs = new Set<string>()
+    if (input.competenceDate) refs.add(input.competenceDate.slice(0, 7))
+    if (editing?.competenceDate) refs.add(editing.competenceDate.slice(0, 7))
     try {
-      if (editing) {
-        await updateMutation.mutateAsync({ id: editing.id, input })
-        toast({ title: 'Lançamento atualizado' })
-      } else {
-        await createMutation.mutateAsync(input)
-        toast({ title: 'Lançamento criado' })
+      const states = await Promise.all([...refs].map((r) => fetchLockOnce(r)))
+      if (states.some((s) => s === 'fechado_ajustavel')) {
+        setAdjustWarn({ open: true, input })
+        return
       }
-      onOpenChange(false)
-    } catch (err) {
-      if (isAppError(err) && err.displayable) {
-        setError(err.message)
-      } else {
-        setError('Algo deu errado. Tente novamente.')
-      }
+    } catch {
+      // se a checagem de lock falhar, segue o fluxo (o backend é a autoridade final)
     }
+
+    await doSubmit(input)
   }
 
   const inputCls =
@@ -178,6 +206,7 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
   const labelCls = 'block text-sm font-medium text-c-text-2'
 
   return (
+    <>
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40" />
@@ -377,5 +406,20 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+
+    <ConfirmDialog
+      open={adjustWarn.open}
+      onOpenChange={(o) => {
+        if (!o) setAdjustWarn({ open: false, input: null })
+      }}
+      title="Mês fechado"
+      description="Este lançamento cai num mês já fechado (dentro da janela de ajuste). Salvar vai recalcular o relatório daquele mês. Deseja continuar?"
+      confirmLabel="Continuar e recalcular"
+      isLoading={isLoading}
+      onConfirm={() => {
+        if (adjustWarn.input) doSubmit(adjustWarn.input)
+      }}
+    />
+    </>
   )
 }

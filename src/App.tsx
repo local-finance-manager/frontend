@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
 import CategoriesPage from '@/pages/CategoriesPage'
 import TransactionsPage from '@/pages/TransactionsPage'
+import IncomePage from '@/pages/IncomePage'
 import CreditCardsPage from '@/pages/CreditCardsPage'
 import CreditCardDetailPage from '@/pages/CreditCardDetailPage'
 import InstallmentsPage from '@/pages/InstallmentsPage'
@@ -17,6 +18,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Navigate to="/lancamentos" replace />} />
         <Route path="/lancamentos" element={<TransactionsPage />} />
+        <Route path="/receitas" element={<IncomePage />} />
         <Route path="/cartoes" element={<CreditCardsPage />} />
         <Route path="/cartoes/:id" element={<CreditCardDetailPage />} />
         <Route path="/parcelamentos" element={<InstallmentsPage />} />

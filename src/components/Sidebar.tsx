@@ -8,6 +8,7 @@ import {
   Wallet,
   BarChart3,
   ChevronRight,
+  PiggyBank,
   Sun,
   Moon,
   type LucideIcon,
@@ -23,6 +24,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { to: '/lancamentos', label: 'Lançamentos', icon: ArrowLeftRight },
+  { to: '/receitas', label: 'Receitas', icon: PiggyBank },
   { to: '/cartoes', label: 'Cartões', icon: CreditCard },
   { to: '/parcelamentos', label: 'Parcelamentos', icon: Layers },
   { to: '/categorias', label: 'Categorias', icon: Tags },

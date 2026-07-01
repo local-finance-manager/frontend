@@ -2,14 +2,12 @@ import { useState, useEffect } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { isAppError } from '@/lib/api-client'
 import { formatCurrency } from '@/lib/format'
-import { SubcategoryPicker } from '@/features/categories/components/SubcategoryPicker'
-import { INVOICE_PAYMENT_SUBCATEGORY_ID, type PayInvoiceInput } from '../types'
+import { type PayInvoiceInput } from '../types'
 
 type Props = {
   open: boolean
   reference: string | null
-  invoiceTotal: number
-  defaultTitle: string
+  outstanding: number // saldo em aberto da fatura (o que será marcado como pago)
   onOpenChange: (open: boolean) => void
   onConfirm: (reference: string, input: PayInvoiceInput) => Promise<void>
   isLoading: boolean
@@ -31,45 +29,29 @@ const labelCls = 'block text-sm font-medium text-c-text-2'
 export function MarkInvoicePaidDialog({
   open,
   reference,
-  invoiceTotal,
-  defaultTitle,
+  outstanding,
   onOpenChange,
   onConfirm,
   isLoading,
 }: Props) {
   const [paymentDate, setPaymentDate] = useState(todayString)
-  const [subcategoryId, setSubcategoryId] = useState(INVOICE_PAYMENT_SUBCATEGORY_ID)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) {
       setPaymentDate(todayString())
-      setSubcategoryId(INVOICE_PAYMENT_SUBCATEGORY_ID)
-      setTitle(defaultTitle)
-      setDescription('')
       setError(null)
     }
-  }, [open, defaultTitle])
+  }, [open])
 
   async function handleConfirm() {
     if (!reference) return
     setError(null)
     try {
-      await onConfirm(reference, {
-        paymentDate,
-        subcategoryId,
-        title: title.trim() || null,
-        description: description.trim() || null,
-      })
+      await onConfirm(reference, { paymentDate })
       onOpenChange(false)
     } catch (err) {
-      if (isAppError(err) && err.displayable) {
-        setError(err.message)
-      } else {
-        setError('Algo deu errado. Tente novamente.')
-      }
+      setError(isAppError(err) && err.displayable ? err.message : 'Algo deu errado. Tente novamente.')
     }
   }
 
@@ -77,25 +59,21 @@ export function MarkInvoicePaidDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[90vh] w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg bg-c-surface p-6 shadow-xl focus:outline-none">
-          <Dialog.Title className="text-base font-semibold text-c-text">
-            Registrar Pagamento
-          </Dialog.Title>
+        <Dialog.Content className="fixed left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-c-surface p-6 shadow-xl focus:outline-none">
+          <Dialog.Title className="text-base font-semibold text-c-text">Registrar Pagamento</Dialog.Title>
           {reference && (
-            <Dialog.Description className="mt-1 text-sm text-c-text-3">
-              Fatura {reference}
-            </Dialog.Description>
+            <Dialog.Description className="mt-1 text-sm text-c-text-3">Fatura {reference}</Dialog.Description>
           )}
 
           <div className="mt-4 space-y-4">
             <div>
-              <span className={labelCls}>Valor da fatura</span>
-              <p className="mt-1 text-2xl font-bold text-c-text">{formatCurrency(invoiceTotal)}</p>
+              <span className={labelCls}>Saldo a pagar</span>
+              <p className="mt-1 text-2xl font-bold text-c-text">{formatCurrency(outstanding)}</p>
             </div>
 
             <div>
               <label htmlFor="invoice-payment-date" className={labelCls}>
-                Data do pagamento
+                Data do pagamento <span className="text-red-500">*</span>
               </label>
               <input
                 id="invoice-payment-date"
@@ -104,48 +82,9 @@ export function MarkInvoicePaidDialog({
                 onChange={(e) => setPaymentDate(e.target.value)}
                 className={inputCls}
               />
-            </div>
-
-            <div>
-              <label htmlFor="invoice-pay-subcategory" className={labelCls}>
-                Subcategoria <span className="text-red-500">*</span>
-              </label>
-              <div className="mt-1">
-                <SubcategoryPicker
-                  id="invoice-pay-subcategory"
-                  value={subcategoryId}
-                  defaultTypes={['transferencia']}
-                  onChange={(id) => setSubcategoryId(id)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="invoice-pay-title" className={labelCls}>
-                Título
-              </label>
-              <input
-                id="invoice-pay-title"
-                type="text"
-                maxLength={150}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={inputCls}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="invoice-pay-description" className={labelCls}>
-                Descrição
-              </label>
-              <textarea
-                id="invoice-pay-description"
-                rows={2}
-                maxLength={1000}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="mt-1 block w-full resize-none rounded-md border border-c-border bg-c-surface px-3 py-2 text-sm text-c-text placeholder:text-c-text-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <p className="mt-1 text-xs text-c-text-3">
+                Marca as compras em aberto desta fatura como pagas nesta data. O gasto entra no caixa neste dia.
+              </p>
             </div>
 
             {error && <p className="text-sm text-red-600">{error}</p>}
@@ -162,7 +101,7 @@ export function MarkInvoicePaidDialog({
             <button
               type="button"
               onClick={handleConfirm}
-              disabled={isLoading || !paymentDate || !subcategoryId}
+              disabled={isLoading || !paymentDate}
               className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-40"
             >
               {isLoading ? 'Registrando...' : 'Registrar Pagamento'}

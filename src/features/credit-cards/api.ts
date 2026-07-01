@@ -27,10 +27,8 @@ type CategoryBreakdownApiResp = {
 }
 
 type InvoicePaymentApiResp = {
-  reference: string
   payment_date: string
-  transaction_id: string | null
-  created_at: string
+  amount: number
 }
 
 type InvoiceApiResp = {
@@ -40,8 +38,11 @@ type InvoiceApiResp = {
   due_date: string
   status: string
   total: number
+  paid_amount: number
+  outstanding_amount: number
+  payment_status: string
   count: number
-  payment: InvoicePaymentApiResp | null
+  payments: InvoicePaymentApiResp[]
   category_breakdown: CategoryBreakdownApiResp[]
 }
 
@@ -110,12 +111,7 @@ function parseBreakdown(raw: CategoryBreakdownApiResp): CategoryBreakdown {
 }
 
 function parseInvoicePayment(raw: InvoicePaymentApiResp): InvoicePayment {
-  return {
-    reference: raw.reference,
-    paymentDate: raw.payment_date,
-    transactionId: raw.transaction_id,
-    createdAt: new Date(raw.created_at),
-  }
+  return { paymentDate: raw.payment_date, amount: raw.amount }
 }
 
 function parseInvoice(raw: InvoiceApiResp): Invoice {
@@ -126,8 +122,11 @@ function parseInvoice(raw: InvoiceApiResp): Invoice {
     dueDate: raw.due_date,
     status: raw.status as InvoiceStatus,
     total: raw.total,
+    paidAmount: raw.paid_amount,
+    outstandingAmount: raw.outstanding_amount,
+    paymentStatus: raw.payment_status as Invoice['paymentStatus'],
     count: raw.count,
-    payment: raw.payment ? parseInvoicePayment(raw.payment) : null,
+    payments: (raw.payments ?? []).map(parseInvoicePayment),
     categoryBreakdown: raw.category_breakdown.map(parseBreakdown),
   }
 }
@@ -257,21 +256,20 @@ export async function payInvoice(
   reference: string,
   input: PayInvoiceInput,
 ): Promise<Invoice> {
-  const { data } = await apiClient.patch<InvoiceApiResp>(
+  const { data } = await apiClient.post<InvoiceApiResp>(
     `/credit-cards/${cardId}/invoices/${reference}/pay`,
-    {
-      payment_date: input.paymentDate,
-      subcategory_id: input.subcategoryId,
-      title: input.title,
-      description: input.description,
-    },
+    { payment_date: input.paymentDate },
   )
   return parseInvoice(data)
 }
 
-export async function undoInvoicePayment(cardId: string, reference: string): Promise<Invoice> {
+export async function undoInvoicePayment(
+  cardId: string,
+  reference: string,
+  paymentDate: string,
+): Promise<Invoice> {
   const { data } = await apiClient.delete<InvoiceApiResp>(
-    `/credit-cards/${cardId}/invoices/${reference}/pay`,
+    `/credit-cards/${cardId}/invoices/${reference}/payments/${paymentDate}`,
   )
   return parseInvoice(data)
 }

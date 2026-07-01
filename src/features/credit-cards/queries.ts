@@ -117,7 +117,7 @@ export function usePayInvoice() {
       qc.invalidateQueries({ queryKey: creditCardKeys.detail(cardId) })
       qc.invalidateQueries({ queryKey: creditCardKeys.invoices(cardId) })
       qc.invalidateQueries({ queryKey: creditCardKeys.invoice(cardId, reference) })
-      // O pagamento cria o lançamento e realiza as compras → invalida lançamentos.
+      // Pagar marca as compras como pagas (realizado) → muda o caixa por data de pagamento.
       qc.invalidateQueries({ queryKey: transactionKeys.lists() })
     },
   })
@@ -126,8 +126,8 @@ export function usePayInvoice() {
 export function useUndoPayment() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ cardId, reference }: { cardId: string; reference: string }) =>
-      undoInvoicePayment(cardId, reference),
+    mutationFn: ({ cardId, reference, paymentDate }: { cardId: string; reference: string; paymentDate: string }) =>
+      undoInvoicePayment(cardId, reference, paymentDate),
     onSuccess: (_data, { cardId, reference }) => {
       qc.invalidateQueries({ queryKey: creditCardKeys.lists() })
       qc.invalidateQueries({ queryKey: creditCardKeys.detail(cardId) })

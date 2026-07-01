@@ -8,8 +8,8 @@ import { CategoryBreakdownList } from './CategoryBreakdownList'
 type Props = {
   cardId: string
   reference: string
-  onMarkPaid: (reference: string, total: number, pendingCount: number) => void
-  onUndoPayment: (reference: string) => void
+  onMarkPaid: (reference: string, outstanding: number) => void
+  onUndoPayment: (reference: string, paymentDate: string) => void
   onSelectTransaction: (id: string) => void
 }
 
@@ -73,37 +73,50 @@ export function InvoiceDetailPanel({
           {formatDateString(detail.dueDate)}
         </p>
         <p className="mt-2 text-2xl font-bold text-c-text">{formatCurrency(detail.total)}</p>
+        {detail.paidAmount > 0 && (
+          <p className="text-xs text-c-text-3">
+            Pago {formatCurrency(detail.paidAmount)} ·{' '}
+            <span className="font-medium text-c-text-2">
+              Saldo devedor {formatCurrency(detail.outstandingAmount)}
+            </span>
+          </p>
+        )}
         <p className="text-xs text-c-text-3">{detail.count} lançamento{detail.count !== 1 ? 's' : ''}</p>
       </div>
 
-      {(detail.status === 'fechada' || detail.status === 'vencida') && (
+      {/* Pagar fatura aberta/fechada/vencida enquanto houver saldo devedor (antecipado/parcial). */}
+      {detail.status !== 'futura' && detail.outstandingAmount > 0 && (
         <button
           type="button"
-          onClick={() =>
-            onMarkPaid(
-              reference,
-              detail.total,
-              detail.data.filter((t) => t.status === 'pendente').length,
-            )
-          }
+          onClick={() => onMarkPaid(reference, detail.outstandingAmount)}
           className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
         >
-          Registrar Pagamento
+          {detail.paidAmount > 0 ? 'Pagar saldo / parcial' : 'Registrar Pagamento'}
         </button>
       )}
 
-      {detail.status === 'paga' && detail.payment && (
-        <div className="flex items-center justify-between rounded-md bg-green-50 px-3 py-2 dark:bg-green-900/20">
-          <p className="text-sm text-green-700 dark:text-green-400">
-            Paga em {formatDateString(detail.payment.paymentDate)}
-          </p>
-          <button
-            type="button"
-            onClick={() => onUndoPayment(reference)}
-            className="text-xs text-green-700 underline hover:text-green-900 dark:text-green-400"
-          >
-            Desfazer
-          </button>
+      {detail.payments.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-c-text-2">
+            Pagamentos {detail.paymentStatus === 'paga' ? '(quitada)' : detail.paymentStatus === 'parcial' ? '(parcial)' : ''}
+          </h4>
+          {detail.payments.map((p) => (
+            <div
+              key={p.paymentDate}
+              className="flex items-center justify-between rounded-md bg-green-50 px-3 py-2 dark:bg-green-900/20"
+            >
+              <p className="text-sm text-green-700 dark:text-green-400">
+                {formatCurrency(p.amount)} em {formatDateString(p.paymentDate)}
+              </p>
+              <button
+                type="button"
+                onClick={() => onUndoPayment(reference, p.paymentDate)}
+                className="text-xs text-green-700 underline hover:text-green-900 dark:text-green-400"
+              >
+                Desfazer
+              </button>
+            </div>
+          ))}
         </div>
       )}
 

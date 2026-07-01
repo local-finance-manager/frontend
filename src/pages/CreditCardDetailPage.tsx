@@ -28,9 +28,8 @@ export default function CreditCardDetailPage() {
   const [markPaidDialog, setMarkPaidDialog] = useState<{
     open: boolean
     reference: string | null
-    total: number
-    pendingCount: number
-  }>({ open: false, reference: null, total: 0, pendingCount: 0 })
+    outstanding: number
+  }>({ open: false, reference: null, outstanding: 0 })
 
   const { data: card, isLoading: cardLoading, isError: cardError, error: cardErr } = useCreditCard(id!)
   const { data: invoices = [], isLoading: invoicesLoading } = useInvoices(id!)
@@ -50,19 +49,16 @@ export default function CreditCardDetailPage() {
   }, [invoices, selectedReference])
 
   async function handleMarkPaid(reference: string, input: PayInvoiceInput): Promise<void> {
-    const pendingCount = markPaidDialog.pendingCount
-    await payMutation.mutateAsync({ cardId: id!, reference, input })
-    setMarkPaidDialog({ open: false, reference: null, total: 0, pendingCount: 0 })
+    const inv = await payMutation.mutateAsync({ cardId: id!, reference, input })
+    setMarkPaidDialog({ open: false, reference: null, outstanding: 0 })
     toast({
-      title: pendingCount
-        ? `Fatura paga — ${pendingCount} lançamento${pendingCount !== 1 ? 's' : ''} baixado${pendingCount !== 1 ? 's' : ''}`
-        : 'Fatura registrada como paga',
+      title: inv.paymentStatus === 'paga' ? 'Fatura quitada' : 'Compras em aberto marcadas como pagas',
     })
   }
 
-  async function handleUndoPayment(reference: string) {
+  async function handleUndoPayment(reference: string, paymentDate: string) {
     try {
-      await undoMutation.mutateAsync({ cardId: id!, reference })
+      await undoMutation.mutateAsync({ cardId: id!, reference, paymentDate })
       toast({ title: 'Pagamento desfeito' })
     } catch {
       toast({ title: 'Erro ao desfazer pagamento', variant: 'destructive' })
@@ -214,8 +210,8 @@ export default function CreditCardDetailPage() {
             <InvoiceDetailPanel
               cardId={id!}
               reference={selectedReference}
-              onMarkPaid={(ref, total, pendingCount) =>
-                setMarkPaidDialog({ open: true, reference: ref, total, pendingCount })
+              onMarkPaid={(ref, outstanding) =>
+                setMarkPaidDialog({ open: true, reference: ref, outstanding })
               }
               onUndoPayment={handleUndoPayment}
               onSelectTransaction={actions.openDetail}
@@ -231,10 +227,7 @@ export default function CreditCardDetailPage() {
       <MarkInvoicePaidDialog
         open={markPaidDialog.open}
         reference={markPaidDialog.reference}
-        invoiceTotal={markPaidDialog.total}
-        defaultTitle={
-          markPaidDialog.reference ? `Pagamento de Fatura — ${card.name} ${markPaidDialog.reference}` : ''
-        }
+        outstanding={markPaidDialog.outstanding}
         onOpenChange={(open) => setMarkPaidDialog((s) => ({ ...s, open }))}
         onConfirm={handleMarkPaid}
         isLoading={payMutation.isPending}

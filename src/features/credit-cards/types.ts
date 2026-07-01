@@ -1,5 +1,6 @@
 export type CreditCardBrand = 'visa' | 'mastercard' | 'elo' | 'amex' | 'hipercard' | 'outros'
 export type InvoiceStatus = 'futura' | 'aberta' | 'fechada' | 'paga' | 'vencida'
+export type PaymentStatus = 'nenhum' | 'parcial' | 'paga'
 export type UtilizationLevel = 'saudavel' | 'atencao' | 'alto' | 'critico'
 
 export type CategoryBreakdown = {
@@ -10,11 +11,10 @@ export type CategoryBreakdown = {
   percent: number
 }
 
+// Um "pagamento" é o lote de compras quitado numa mesma data (derivado das compras).
 export type InvoicePayment = {
-  reference: string
   paymentDate: string
-  transactionId: string | null
-  createdAt: Date
+  amount: number
 }
 
 export type Invoice = {
@@ -24,8 +24,11 @@ export type Invoice = {
   dueDate: string
   status: InvoiceStatus
   total: number
+  paidAmount: number
+  outstandingAmount: number
+  paymentStatus: PaymentStatus
   count: number
-  payment: InvoicePayment | null
+  payments: InvoicePayment[]
   categoryBreakdown: CategoryBreakdown[]
 }
 
@@ -102,15 +105,11 @@ export type CreateCreditCardInput = {
 
 export type UpdateCreditCardInput = CreateCreditCardInput
 
+// Pagar a fatura = marcar as compras em aberto como pagas na data informada (sem valor,
+// sem subcategoria, sem lançamento sintético).
 export type PayInvoiceInput = {
   paymentDate: string
-  subcategoryId: string
-  title: string | null
-  description: string | null
 }
-
-// Subcategoria-semente (migration 0008) usada como default do pagamento de fatura.
-export const INVOICE_PAYMENT_SUBCATEGORY_ID = 'sub-trf-pgto-fatura'
 
 export const BRAND_LABELS: Record<CreditCardBrand, string> = {
   visa: 'Visa',
@@ -127,6 +126,12 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   fechada: 'Fechada',
   paga: 'Paga',
   vencida: 'Vencida',
+}
+
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  nenhum: 'Em aberto',
+  parcial: 'Parcial',
+  paga: 'Paga',
 }
 
 export const UTILIZATION_LEVEL_LABELS: Record<UtilizationLevel, string> = {

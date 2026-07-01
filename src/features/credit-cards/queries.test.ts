@@ -131,7 +131,22 @@ describe('useCreateCreditCard', () => {
   })
 })
 
-// ── usePayInvoice ─────────────────────────────────────────────────────────────
+// ── usePayInvoice ───────────────────────────────────────────────────────────────
+
+const FULL_INVOICE = {
+  reference: '2026-07',
+  cycleStart: '2026-06-04',
+  closingDate: '2026-07-03',
+  dueDate: '2026-07-10',
+  status: 'paga' as const,
+  total: 132000,
+  paidAmount: 132000,
+  outstandingAmount: 0,
+  paymentStatus: 'paga' as const,
+  count: 7,
+  payments: [],
+  categoryBreakdown: [],
+}
 
 describe('usePayInvoice', () => {
   beforeEach(() => vi.clearAllMocks())
@@ -139,31 +154,11 @@ describe('usePayInvoice', () => {
   it('chama payInvoice com os argumentos corretos', async () => {
     const { payInvoice } = await import('./api')
     const mockPay = vi.mocked(payInvoice)
-    mockPay.mockResolvedValueOnce({
-      reference: '2026-07',
-      cycleStart: '2026-06-04',
-      closingDate: '2026-07-03',
-      dueDate: '2026-07-10',
-      status: 'paga',
-      total: 132000,
-      count: 7,
-      payment: {
-        reference: '2026-07',
-        paymentDate: '2026-07-10',
-        transactionId: null,
-        createdAt: new Date(),
-      },
-      categoryBreakdown: [],
-    })
+    mockPay.mockResolvedValueOnce(FULL_INVOICE)
 
     const { result } = renderHook(() => usePayInvoice(), { wrapper: makeWrapper() })
 
-    const input = {
-      paymentDate: '2026-07-10',
-      subcategoryId: 'sub-trf-pgto-fatura',
-      title: null,
-      description: null,
-    }
+    const input = { paymentDate: '2026-07-10' }
     await result.current.mutateAsync({ cardId: 'card-1', reference: '2026-07', input })
 
     expect(mockPay).toHaveBeenCalledWith('card-1', '2026-07', input)
@@ -175,25 +170,21 @@ describe('usePayInvoice', () => {
 describe('useUndoPayment', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('chama undoInvoicePayment com cardId e reference', async () => {
+  it('chama undoInvoicePayment com cardId, reference e paymentDate', async () => {
     const { undoInvoicePayment } = await import('./api')
     const mockUndo = vi.mocked(undoInvoicePayment)
     mockUndo.mockResolvedValueOnce({
-      reference: '2026-07',
-      cycleStart: '2026-06-04',
-      closingDate: '2026-07-03',
-      dueDate: '2026-07-10',
+      ...FULL_INVOICE,
       status: 'fechada',
-      total: 132000,
-      count: 7,
-      payment: null,
-      categoryBreakdown: [],
+      paidAmount: 0,
+      outstandingAmount: 132000,
+      paymentStatus: 'nenhum',
     })
 
     const { result } = renderHook(() => useUndoPayment(), { wrapper: makeWrapper() })
 
-    await result.current.mutateAsync({ cardId: 'card-1', reference: '2026-07' })
+    await result.current.mutateAsync({ cardId: 'card-1', reference: '2026-07', paymentDate: '2026-07-10' })
 
-    expect(mockUndo).toHaveBeenCalledWith('card-1', '2026-07')
+    expect(mockUndo).toHaveBeenCalledWith('card-1', '2026-07', '2026-07-10')
   })
 })

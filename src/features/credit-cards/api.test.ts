@@ -30,8 +30,11 @@ const RAW_INVOICE = {
   due_date: '2026-07-10',
   status: 'aberta',
   total: 132000,
+  paid_amount: 0,
+  outstanding_amount: 132000,
+  payment_status: 'nenhum',
   count: 7,
-  payment: null,
+  payments: [],
   category_breakdown: [
     { category_id: 'cat-1', category_name: 'Alimentação', color: '#27AE60', total: 80000, percent: 61 },
   ],
@@ -99,24 +102,23 @@ describe('parseCreditCardFromApi', () => {
     expect(result.openInvoice).toBeNull()
   })
 
-  it('parseia payment em openInvoice quando presente', () => {
+  it('parseia o ledger de pagamentos em openInvoice quando presente', () => {
     const rawWithPayment = {
       ...RAW_CARD,
       open_invoice: {
         ...RAW_INVOICE,
         status: 'paga',
-        payment: {
-          reference: '2026-07',
-          payment_date: '2026-07-10',
-          transaction_id: null,
-          created_at: '2026-07-10T09:00:00Z',
-        },
+        paid_amount: 132000,
+        outstanding_amount: 0,
+        payment_status: 'paga',
+        payments: [{ payment_date: '2026-07-10', amount: 132000 }],
       },
     }
     const result = parseCreditCardFromApi(rawWithPayment)
-    expect(result.openInvoice!.payment).not.toBeNull()
-    expect(result.openInvoice!.payment!.paymentDate).toBe('2026-07-10')
-    expect(result.openInvoice!.payment!.createdAt).toBeInstanceOf(Date)
+    expect(result.openInvoice!.payments).toHaveLength(1)
+    expect(result.openInvoice!.payments[0].amount).toBe(132000)
+    expect(result.openInvoice!.payments[0].paymentDate).toBe('2026-07-10')
+    expect(result.openInvoice!.paymentStatus).toBe('paga')
   })
 })
 
@@ -197,28 +199,20 @@ describe('fetchMonthlySummary', () => {
   })
 })
 
-// ── payInvoice ────────────────────────────────────────────────────────────────
+// ── payInvoice ──────────────────────────────────────────────────────────────────
 
 describe('payInvoice', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('envia payment_date, subcategory_id, title e description no body', async () => {
+  it('faz POST em /pay só com payment_date', async () => {
     const apiClient = (await import('@/lib/api-client')).default
-    const mockPatch = vi.mocked(apiClient.patch)
-    mockPatch.mockResolvedValueOnce({ data: { ...RAW_INVOICE, status: 'paga' } })
+    const mockPost = vi.mocked(apiClient.post)
+    mockPost.mockResolvedValueOnce({ data: { ...RAW_INVOICE, status: 'paga', payment_status: 'paga' } })
 
-    await payInvoice('card-1', '2026-07', {
-      paymentDate: '2026-07-10',
-      subcategoryId: 'sub-trf-pgto-fatura',
-      title: 'Pagamento de Fatura',
-      description: null,
-    })
+    await payInvoice('card-1', '2026-07', { paymentDate: '2026-07-10' })
 
-    expect(mockPatch).toHaveBeenCalledWith('/credit-cards/card-1/invoices/2026-07/pay', {
+    expect(mockPost).toHaveBeenCalledWith('/credit-cards/card-1/invoices/2026-07/pay', {
       payment_date: '2026-07-10',
-      subcategory_id: 'sub-trf-pgto-fatura',
-      title: 'Pagamento de Fatura',
-      description: null,
     })
   })
 })
@@ -243,7 +237,7 @@ describe('credit-cards CRUD/invoices', () => {
     const { createCreditCard } = await import('./api')
     await createCreditCard({
       name: 'X', brand: 'visa', lastFourDigits: '1111', issuer: 'Itau',
-      creditLimit: 100000, closingDay: 5, dueDay: 12, color: '#fff', icon: null,
+      creditLimit: 100000, closingDay: 5, dueDay: 12, color: '#fff',
     })
     expect(apiClient.post).toHaveBeenCalledWith('/credit-cards', expect.objectContaining({
       name: 'X', brand: 'visa', credit_limit: 100000, closing_day: 5, due_day: 12,
@@ -256,7 +250,7 @@ describe('credit-cards CRUD/invoices', () => {
     const { updateCreditCard } = await import('./api')
     await updateCreditCard('card-1', {
       name: 'Y', brand: 'visa', lastFourDigits: null, issuer: null,
-      creditLimit: 200000, closingDay: 5, dueDay: 12, color: null, icon: null,
+      creditLimit: 200000, closingDay: 5, dueDay: 12, color: null,
     })
     expect(apiClient.put).toHaveBeenCalledWith('/credit-cards/card-1', expect.objectContaining({ credit_limit: 200000 }))
   })
@@ -290,11 +284,11 @@ describe('credit-cards CRUD/invoices', () => {
     expect(d.data[0].title).toBe('Compra')
   })
 
-  it('undoInvoicePayment faz DELETE no pay', async () => {
+  it('undoInvoicePayment faz DELETE no pagamento pela data', async () => {
     const apiClient = (await import('@/lib/api-client')).default
     vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: RAW_INVOICE })
     const { undoInvoicePayment } = await import('./api')
-    await undoInvoicePayment('card-1', '2026-07')
-    expect(apiClient.delete).toHaveBeenCalledWith('/credit-cards/card-1/invoices/2026-07/pay')
+    await undoInvoicePayment('card-1', '2026-07', '2026-07-10')
+    expect(apiClient.delete).toHaveBeenCalledWith('/credit-cards/card-1/invoices/2026-07/payments/2026-07-10')
   })
 })

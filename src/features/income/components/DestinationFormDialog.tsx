@@ -6,6 +6,7 @@ import { MoneyInput } from '@/components/ui/MoneyInput'
 import { toast } from '@/hooks/useToast'
 import { SubcategoryPicker } from '@/features/categories/components/SubcategoryPicker'
 import { PAYMENT_METHOD_LABELS, type PaymentMethod } from '@/features/transactions/types'
+import { useCaixinhas } from '@/features/patrimonio/queries'
 import { useCreateDestination, useUpdateDestination } from '../queries'
 import {
   KIND_LABELS,
@@ -32,6 +33,7 @@ type FormState = {
   presetSubcategoryId: string
   presetPaymentMethod: string
   presetDescription: string
+  caixinhaId: string // quando setado (kind=investimento), materializa como aporte na caixinha
 }
 
 const DEFAULT_FORM: FormState = {
@@ -43,6 +45,7 @@ const DEFAULT_FORM: FormState = {
   presetSubcategoryId: '',
   presetPaymentMethod: '',
   presetDescription: '',
+  caixinhaId: '',
 }
 
 // "25" → 2500 bp | "33,33" → 3333 bp
@@ -62,6 +65,7 @@ export function DestinationFormDialog({ open, reference, editing, onOpenChange }
   const createMutation = useCreateDestination()
   const updateMutation = useUpdateDestination()
   const isLoading = createMutation.isPending || updateMutation.isPending
+  const { data: caixinhas = [] } = useCaixinhas()
 
   useEffect(() => {
     if (!open) return
@@ -75,6 +79,7 @@ export function DestinationFormDialog({ open, reference, editing, onOpenChange }
         presetSubcategoryId: editing.presetSubcategoryId ?? '',
         presetPaymentMethod: editing.presetPaymentMethod ?? '',
         presetDescription: editing.presetDescription ?? '',
+        caixinhaId: editing.caixinhaId ?? '',
       })
     } else {
       setForm(DEFAULT_FORM)
@@ -96,6 +101,7 @@ export function DestinationFormDialog({ open, reference, editing, onOpenChange }
       presetSubcategoryId: form.presetSubcategoryId || null,
       presetPaymentMethod: form.presetPaymentMethod || null,
       presetDescription: form.presetDescription.trim() || null,
+      caixinhaId: form.kind === 'investimento' && form.caixinhaId ? form.caixinhaId : null,
     }
 
     try {
@@ -164,7 +170,7 @@ export function DestinationFormDialog({ open, reference, editing, onOpenChange }
                   id="dst-kind"
                   value={form.kind}
                   onChange={(e) =>
-                    setForm((p) => ({ ...p, kind: e.target.value as DestinationKind, presetSubcategoryId: '' }))
+                    setForm((p) => ({ ...p, kind: e.target.value as DestinationKind, presetSubcategoryId: '', caixinhaId: '' }))
                   }
                   className={selectCls}
                 >
@@ -225,21 +231,48 @@ export function DestinationFormDialog({ open, reference, editing, onOpenChange }
               </div>
             )}
 
-            <div>
-              <label className={labelCls}>Subcategoria do lançamento (preset)</label>
-              <div className="mt-1">
-                <SubcategoryPicker
-                  value={form.presetSubcategoryId}
-                  defaultTypes={[...subTypes]}
-                  onChange={(id) => setForm((p) => ({ ...p, presetSubcategoryId: id }))}
-                  placeholder="Opcional — define ao materializar"
-                />
+            {form.kind === 'investimento' && (
+              <div>
+                <label htmlFor="dst-caixinha" className={labelCls}>
+                  Aportar na caixinha
+                </label>
+                <select
+                  id="dst-caixinha"
+                  value={form.caixinhaId}
+                  onChange={(e) => setForm((p) => ({ ...p, caixinhaId: e.target.value }))}
+                  className={selectCls}
+                >
+                  <option value="">Aporte genérico (sem caixinha)</option>
+                  {caixinhas.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-c-text-3">
+                  Ao materializar, o valor entra como <strong>aporte</strong> nessa caixinha (sai do disponível e
+                  vira patrimônio guardado). Sem caixinha, gera uma transferência genérica.
+                </p>
               </div>
-              <p className="mt-1 text-xs text-c-text-3">
-                Sem preset, você escolhe a subcategoria na hora de materializar
-                {form.kind === 'investimento' ? ' (investimento usa "Aporte em Investimentos" por padrão)' : ''}.
-              </p>
-            </div>
+            )}
+
+            {!(form.kind === 'investimento' && form.caixinhaId) && (
+              <div>
+                <label className={labelCls}>Subcategoria do lançamento (preset)</label>
+                <div className="mt-1">
+                  <SubcategoryPicker
+                    value={form.presetSubcategoryId}
+                    defaultTypes={[...subTypes]}
+                    onChange={(id) => setForm((p) => ({ ...p, presetSubcategoryId: id }))}
+                    placeholder="Opcional — define ao materializar"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-c-text-3">
+                  Sem preset, você escolhe a subcategoria na hora de materializar
+                  {form.kind === 'investimento' ? ' (investimento usa "Aporte em Investimentos" por padrão)' : ''}.
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>

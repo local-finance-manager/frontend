@@ -5,8 +5,9 @@ import { isAppError } from '@/lib/api-client'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/cn'
 import { useMonthlyReport, useCloseMonth } from '@/features/reports/queries'
-import { LOCK_STATE_LABELS, type ReportMode } from '@/features/reports/types'
+import { LOCK_STATE_LABELS, type ReportMode, type Regime } from '@/features/reports/types'
 import { PeriodNavigator } from '@/features/reports/components/PeriodNavigator'
+import { RegimeToggle } from '@/features/reports/components/RegimeToggle'
 import { ReportBody } from '@/features/reports/components/ReportBody'
 import { CloseMonthDialog } from '@/features/reports/components/CloseMonthDialog'
 import { currentMonthRef, shiftMonth, monthLabel, monthEnded } from '@/features/reports/periods'
@@ -14,11 +15,12 @@ import { currentMonthRef, shiftMonth, monthLabel, monthEnded } from '@/features/
 export default function ReportMonthlyPage() {
   const [reference, setReference] = useState(currentMonthRef())
   const [mode, setMode] = useState<ReportMode>('realizado')
+  const [regime, setRegime] = useState<Regime>('caixa')
   const [closeOpen, setCloseOpen] = useState(false)
 
-  const query = useMonthlyReport(reference, mode)
+  const query = useMonthlyReport(reference, mode, regime)
   // probe de pendentes só quando o diálogo de fechar abre (RF-REL-05)
-  const projProbe = useMonthlyReport(reference, 'projetivo', closeOpen)
+  const projProbe = useMonthlyReport(reference, 'projetivo', regime, closeOpen)
   const closeMutation = useCloseMonth()
 
   const report = query.data
@@ -65,6 +67,7 @@ export default function ReportMonthlyPage() {
           onPrev={() => setReference((r) => shiftMonth(r, -1))}
           onNext={() => setReference((r) => shiftMonth(r, 1))}
         >
+          <RegimeToggle value={regime} onChange={setRegime} />
           <div className="flex gap-1 rounded-lg border border-c-border bg-c-surface p-0.5">
             {(['realizado', 'projetivo'] as const).map((m) => (
               <button

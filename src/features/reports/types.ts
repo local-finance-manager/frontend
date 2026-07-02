@@ -2,7 +2,13 @@
 
 export type ReportScope = 'monthly' | 'quarterly' | 'semiannual' | 'annual'
 export type ReportMode = 'realizado' | 'projetivo'
+export type Regime = 'caixa' | 'competencia'
 export type LockState = 'aberto' | 'fechado_ajustavel' | 'fechado_bloqueado'
+
+export const REGIME_LABELS: Record<Regime, string> = {
+  caixa: 'Caixa',
+  competencia: 'Competência',
+}
 
 export type KPIs = {
   totalReceitas: number
@@ -77,6 +83,7 @@ export type Report = {
   year?: number
   quarter?: number
   half?: number
+  regime?: Regime
   mode?: ReportMode
   status?: LockState
   kpis: KPIs

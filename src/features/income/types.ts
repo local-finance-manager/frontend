@@ -33,6 +33,7 @@ export type Destination = {
   presetSubcategoryId: string | null
   presetPaymentMethod: string | null
   presetDescription: string | null
+  caixinhaId: string | null
   displayOrder: number
 }
 
@@ -57,6 +58,7 @@ export type DestinationInput = {
   presetSubcategoryId: string | null
   presetPaymentMethod: string | null
   presetDescription: string | null
+  caixinhaId?: string | null
   displayOrder?: number
 }
 

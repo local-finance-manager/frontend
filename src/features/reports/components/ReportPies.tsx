@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { formatCurrency } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Analitico, CatAnalitico } from '../types'
@@ -28,18 +28,41 @@ function Donut({ data }: { data: Slice[] }) {
   if (data.length === 0) {
     return <p className="py-12 text-center text-sm text-c-text-3">Sem dados.</p>
   }
+  // % de cada fatia sobre o total do recorte (RF-REL-13 / R9): valor + % em rótulo e tooltip.
+  const total = data.reduce((s, d) => s + d.value, 0)
+  const pct = (v: number) => (total > 0 ? Math.round((v / total) * 1000) / 10 : 0)
+  // Legenda própria em HTML abaixo do gráfico: quebra em linhas e faz o card crescer
+  // conforme o nº de subcategorias, sem invadir a rosca (altura do gráfico fixa).
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <PieChart>
-        <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={2}>
-          {data.map((d, i) => (
-            <Cell key={i} fill={d.color} />
-          ))}
-        </Pie>
-        <Tooltip formatter={(v: number) => formatCurrency(v)} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-      </PieChart>
-    </ResponsiveContainer>
+    <div>
+      <ResponsiveContainer width="100%" height={240}>
+        <PieChart>
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            innerRadius={55}
+            outerRadius={90}
+            paddingAngle={2}
+          >
+            {data.map((d, i) => (
+              <Cell key={i} fill={d.color} />
+            ))}
+          </Pie>
+          <Tooltip formatter={(v: number) => `${formatCurrency(v)} (${pct(v)}%)`} />
+        </PieChart>
+      </ResponsiveContainer>
+      <ul className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-c-text-2">
+        {data.map((d, i) => (
+          <li key={i} className="flex items-center gap-1">
+            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
+            <span>{d.name}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 

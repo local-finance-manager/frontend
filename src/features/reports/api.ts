@@ -1,26 +1,26 @@
 import apiClient from '@/lib/api-client'
-import type { Report, ReportMode, ClosingView, LockState } from './types'
+import type { Report, ReportMode, Regime, ClosingView, LockState } from './types'
 
 // O backend já devolve o relatório em camelCase (contrato Apêndice B), então o
-// parse é direto. Mantemos as funções finas e tipadas.
+// parse é direto. Mantemos as funções finas e tipadas. Regime padrão: caixa (R8).
 
-export async function fetchMonthly(reference: string, mode: ReportMode = 'realizado'): Promise<Report> {
-  const { data } = await apiClient.get<Report>('/reports/monthly', { params: { reference, mode } })
+export async function fetchMonthly(reference: string, mode: ReportMode = 'realizado', regime: Regime = 'caixa'): Promise<Report> {
+  const { data } = await apiClient.get<Report>('/reports/monthly', { params: { reference, mode, regime } })
   return data
 }
 
-export async function fetchQuarterly(year: number, quarter: number): Promise<Report> {
-  const { data } = await apiClient.get<Report>('/reports/quarterly', { params: { year, quarter } })
+export async function fetchQuarterly(year: number, quarter: number, regime: Regime = 'caixa'): Promise<Report> {
+  const { data } = await apiClient.get<Report>('/reports/quarterly', { params: { year, quarter, regime } })
   return data
 }
 
-export async function fetchSemiannual(year: number, half: number): Promise<Report> {
-  const { data } = await apiClient.get<Report>('/reports/semiannual', { params: { year, half } })
+export async function fetchSemiannual(year: number, half: number, regime: Regime = 'caixa'): Promise<Report> {
+  const { data } = await apiClient.get<Report>('/reports/semiannual', { params: { year, half, regime } })
   return data
 }
 
-export async function fetchAnnual(year: number): Promise<Report> {
-  const { data } = await apiClient.get<Report>('/reports/annual', { params: { year } })
+export async function fetchAnnual(year: number, regime: Regime = 'caixa'): Promise<Report> {
+  const { data } = await apiClient.get<Report>('/reports/annual', { params: { year, regime } })
   return data
 }
 

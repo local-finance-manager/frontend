@@ -17,18 +17,28 @@ describe('reports/api', () => {
     const { fetchMonthly } = await import('./api')
     const r = await fetchMonthly('2026-06', 'projetivo')
     expect(apiClient.get).toHaveBeenCalledWith('/reports/monthly', {
-      params: { reference: '2026-06', mode: 'projetivo' },
+      params: { reference: '2026-06', mode: 'projetivo', regime: 'caixa' },
     })
     expect(r.reference).toBe('2026-06')
   })
 
-  it('fetchMonthly default mode realizado', async () => {
+  it('fetchMonthly default mode realizado + regime caixa', async () => {
     const apiClient = (await import('@/lib/api-client')).default
     vi.mocked(apiClient.get).mockResolvedValueOnce({ data: REPORT })
     const { fetchMonthly } = await import('./api')
     await fetchMonthly('2026-06')
     expect(apiClient.get).toHaveBeenCalledWith('/reports/monthly', {
-      params: { reference: '2026-06', mode: 'realizado' },
+      params: { reference: '2026-06', mode: 'realizado', regime: 'caixa' },
+    })
+  })
+
+  it('fetchMonthly aceita regime competência', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    vi.mocked(apiClient.get).mockResolvedValueOnce({ data: REPORT })
+    const { fetchMonthly } = await import('./api')
+    await fetchMonthly('2026-06', 'realizado', 'competencia')
+    expect(apiClient.get).toHaveBeenCalledWith('/reports/monthly', {
+      params: { reference: '2026-06', mode: 'realizado', regime: 'competencia' },
     })
   })
 
@@ -38,11 +48,11 @@ describe('reports/api', () => {
     get.mockResolvedValue({ data: REPORT })
     const { fetchQuarterly, fetchSemiannual, fetchAnnual } = await import('./api')
     await fetchQuarterly(2026, 2)
-    expect(get).toHaveBeenCalledWith('/reports/quarterly', { params: { year: 2026, quarter: 2 } })
+    expect(get).toHaveBeenCalledWith('/reports/quarterly', { params: { year: 2026, quarter: 2, regime: 'caixa' } })
     await fetchSemiannual(2026, 1)
-    expect(get).toHaveBeenCalledWith('/reports/semiannual', { params: { year: 2026, half: 1 } })
+    expect(get).toHaveBeenCalledWith('/reports/semiannual', { params: { year: 2026, half: 1, regime: 'caixa' } })
     await fetchAnnual(2026)
-    expect(get).toHaveBeenCalledWith('/reports/annual', { params: { year: 2026 } })
+    expect(get).toHaveBeenCalledWith('/reports/annual', { params: { year: 2026, regime: 'caixa' } })
   })
 
   it('fetchClosings desembrulha data', async () => {

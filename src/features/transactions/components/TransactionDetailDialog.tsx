@@ -1,4 +1,4 @@
-import { Layers, Pencil, CheckCircle2, XCircle, Trash2 } from 'lucide-react'
+import { Layers, Pencil, CheckCircle2, XCircle, Trash2, Repeat } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ type Props = {
   onCancel: (t: Transaction) => void
   onDelete: (t: Transaction) => void
   onGoToInstallment: (groupId: string) => void
+  onMakeRecurring?: (t: Transaction) => void
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -46,6 +47,7 @@ export function TransactionDetailDialog({
   onCancel,
   onDelete,
   onGoToInstallment,
+  onMakeRecurring,
 }: Props) {
   const { data: t, isLoading, isError } = useTransaction(transactionId ?? '', open && !!transactionId)
 
@@ -146,6 +148,12 @@ export function TransactionDetailDialog({
                 {t.paymentDate && <Row label="Pagamento" value={formatDateString(t.paymentDate)} />}
                 {t.description && <Row label="Descrição" value={t.description} />}
               </div>
+
+              {t.recurrenceId && (
+                <p className="mt-3 flex items-center gap-1.5 rounded-md bg-c-subtle px-3 py-2 text-xs text-c-text-3">
+                  <Repeat size={13} /> Faz parte de uma recorrência — ajuste o valor das próximas ou exclua na aba Contas.
+                </p>
+              )}
             </div>
 
             <DialogFooter className="flex flex-wrap justify-end gap-2 px-6 pb-6 pt-4">
@@ -165,6 +173,16 @@ export function TransactionDetailDialog({
                   className="inline-flex items-center gap-1.5 rounded-md border border-c-border px-3 py-2 text-sm text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20"
                 >
                   <XCircle size={15} /> Cancelar
+                </button>
+              )}
+              {onMakeRecurring && t.type !== 'transferencia' && !t.recurrenceId && (
+                <button
+                  type="button"
+                  onClick={() => act(onMakeRecurring)}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-c-border px-3 py-2 text-sm text-c-text-2 hover:bg-c-subtle"
+                  title="Criar uma recorrência com o mesmo tipo, categoria e valor"
+                >
+                  <Repeat size={15} /> Tornar recorrente
                 </button>
               )}
               <button

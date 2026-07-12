@@ -26,7 +26,10 @@ type CreditCardOption = { id: string; name: string; lastFourDigits: string | nul
  *
  * Retorna `openDetail(id)`, `openNew(prefill?)` e o nó `dialogs` que a página renderiza.
  */
-export function useTransactionActions(creditCards: CreditCardOption[]) {
+export function useTransactionActions(
+  creditCards: CreditCardOption[],
+  onMakeRecurring?: (t: Transaction) => void,
+) {
   const navigate = useNavigate()
 
   const [detailId, setDetailId] = useState<string | null>(null)
@@ -96,6 +99,7 @@ export function useTransactionActions(creditCards: CreditCardOption[]) {
           setDeleteDialog({ open: true, transaction: t })
         }}
         onGoToInstallment={(groupId) => navigate(`/parcelamentos/${groupId}`)}
+        onMakeRecurring={onMakeRecurring}
       />
 
       <TransactionFormDialog

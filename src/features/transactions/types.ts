@@ -40,6 +40,7 @@ export type Transaction = {
   installmentGroupId: string | null
   installmentNumber: number | null
   installmentTotal: number | null
+  recurrenceId: string | null
   createdAt: Date
   updatedAt: Date
   subcategory: SubcategoryInfo

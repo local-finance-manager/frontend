@@ -4,6 +4,7 @@ import CategoriesPage from '@/pages/CategoriesPage'
 import TransactionsPage from '@/pages/TransactionsPage'
 import IncomePage from '@/pages/IncomePage'
 import PatrimonioPage from '@/pages/PatrimonioPage'
+import ContasPage from '@/pages/ContasPage'
 import CreditCardsPage from '@/pages/CreditCardsPage'
 import CreditCardDetailPage from '@/pages/CreditCardDetailPage'
 import InstallmentsPage from '@/pages/InstallmentsPage'
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/lancamentos" element={<TransactionsPage />} />
         <Route path="/receitas" element={<IncomePage />} />
         <Route path="/patrimonio" element={<PatrimonioPage />} />
+        <Route path="/contas" element={<ContasPage />} />
         <Route path="/cartoes" element={<CreditCardsPage />} />
         <Route path="/cartoes/:id" element={<CreditCardDetailPage />} />
         <Route path="/parcelamentos" element={<InstallmentsPage />} />

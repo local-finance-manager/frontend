@@ -33,6 +33,7 @@ type TransactionApiResp = {
   installment_group_id: string | null
   installment_number: number | null
   installment_total: number | null
+  recurrence_id: string | null
   created_at: string
   updated_at: string
   subcategory: SubcategoryApiResp
@@ -78,6 +79,7 @@ export function parseTransactionFromApi(raw: TransactionApiResp): Transaction {
     installmentGroupId: raw.installment_group_id,
     installmentNumber: raw.installment_number,
     installmentTotal: raw.installment_total,
+    recurrenceId: raw.recurrence_id,
     createdAt: new Date(raw.created_at),
     updatedAt: new Date(raw.updated_at),
     subcategory: {

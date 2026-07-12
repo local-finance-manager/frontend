@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { PageContainer } from '@/components/PageContainer'
@@ -9,13 +10,37 @@ import { useCreditCards } from '@/features/credit-cards/queries'
 import { SummaryBar } from '@/features/transactions/components/SummaryBar'
 import { TransactionFilters } from '@/features/transactions/components/TransactionFilters'
 import { TransactionList } from '@/features/transactions/components/TransactionList'
+import type { Transaction } from '@/features/transactions/types'
+import { RecurrenceFormDialog, type RecurrencePrefill } from '@/features/recurring/components/RecurrenceFormDialog'
+import { shiftMonth } from '@/features/reports/periods'
+import type { Direction } from '@/features/recurring/types'
 
 export default function TransactionsPage() {
   const { filters, setFilter, setPage, navigateMonth } = useTransactionFilters()
 
   const query = useTransactions(filters)
   const { data: creditCards = [] } = useCreditCards(false)
-  const actions = useTransactionActions(creditCards)
+
+  // "Tornar recorrente": abre o formulário de recorrência pré-preenchido a partir do
+  // lançamento (reusa tipo/categoria/valor); começa no mês seguinte p/ não duplicar o atual.
+  const [rec, setRec] = useState<{ open: boolean; direction: Direction; initial?: RecurrencePrefill }>(
+    { open: false, direction: 'pagar' },
+  )
+  function makeRecurring(t: Transaction) {
+    setRec({
+      open: true,
+      direction: t.type === 'receita' ? 'receber' : 'pagar',
+      initial: {
+        title: t.title,
+        amount: t.amount,
+        subcategoryId: t.subcategory.id,
+        paymentMethod: t.paymentMethod,
+        dayOfMonth: Number(t.competenceDate.slice(8, 10)),
+        startReference: shiftMonth(t.competenceDate.slice(0, 7), 1),
+      },
+    })
+  }
+  const actions = useTransactionActions(creditCards, makeRecurring)
 
   return (
     <PageContainer>
@@ -64,6 +89,13 @@ export default function TransactionsPage() {
       </div>
 
       {actions.dialogs}
+
+      <RecurrenceFormDialog
+        open={rec.open}
+        direction={rec.direction}
+        initial={rec.initial}
+        onOpenChange={(open) => setRec((s) => ({ ...s, open }))}
+      />
     </PageContainer>
   )
 }

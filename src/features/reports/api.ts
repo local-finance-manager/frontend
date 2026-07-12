@@ -1,11 +1,12 @@
 import apiClient from '@/lib/api-client'
-import type { Report, ReportMode, Regime, ClosingView, LockState } from './types'
+import type { Report, Regime, ClosingView, LockState } from './types'
 
 // O backend já devolve o relatório em camelCase (contrato Apêndice B), então o
 // parse é direto. Mantemos as funções finas e tipadas. Regime padrão: caixa (R8).
+// Os relatórios são sempre de lançamentos realizados (E5); recorte pelo regime.
 
-export async function fetchMonthly(reference: string, mode: ReportMode = 'realizado', regime: Regime = 'caixa'): Promise<Report> {
-  const { data } = await apiClient.get<Report>('/reports/monthly', { params: { reference, mode, regime } })
+export async function fetchMonthly(reference: string, regime: Regime = 'caixa'): Promise<Report> {
+  const { data } = await apiClient.get<Report>('/reports/monthly', { params: { reference, regime } })
   return data
 }
 

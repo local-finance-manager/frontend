@@ -5,7 +5,8 @@ import { isAppError } from '@/lib/api-client'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/cn'
 import { useMonthlyReport, useCloseMonth } from '@/features/reports/queries'
-import { LOCK_STATE_LABELS, type ReportMode, type Regime } from '@/features/reports/types'
+import { useTransactions } from '@/features/transactions/queries'
+import { LOCK_STATE_LABELS, type Regime } from '@/features/reports/types'
 import { PeriodNavigator } from '@/features/reports/components/PeriodNavigator'
 import { RegimeToggle } from '@/features/reports/components/RegimeToggle'
 import { ReportBody } from '@/features/reports/components/ReportBody'
@@ -14,21 +15,22 @@ import { currentMonthRef, shiftMonth, monthLabel, monthEnded } from '@/features/
 
 export default function ReportMonthlyPage() {
   const [reference, setReference] = useState(currentMonthRef())
-  const [mode, setMode] = useState<ReportMode>('realizado')
   const [regime, setRegime] = useState<Regime>('caixa')
   const [closeOpen, setCloseOpen] = useState(false)
 
-  const query = useMonthlyReport(reference, mode, regime)
-  // probe de pendentes só quando o diálogo de fechar abre (RF-REL-05)
-  const projProbe = useMonthlyReport(reference, 'projetivo', regime, closeOpen)
+  const query = useMonthlyReport(reference, regime)
+  // probe de pendentes só quando o diálogo de fechar abre (RF-REL-05): o relatório
+  // é só de realizados, então lemos os pendentes do mês direto dos lançamentos.
+  const pendingProbe = useTransactions(
+    { status: 'pendente', competenceDateFrom: `${reference}-01`, competenceDateTo: `${reference}-31`, page: 1 },
+    closeOpen,
+  )
   const closeMutation = useCloseMonth()
 
   const report = query.data
   const isOpen = report?.status === 'aberto'
   const canClose = isOpen && monthEnded(reference)
-  const hasPendentes =
-    !!projProbe.data?.projetado &&
-    projProbe.data.projetado.totalDespesas + projProbe.data.projetado.totalReceitas > 0
+  const hasPendentes = (pendingProbe.data?.summary.countTotal ?? 0) > 0
 
   function handleClose() {
     closeMutation
@@ -68,21 +70,6 @@ export default function ReportMonthlyPage() {
           onNext={() => setReference((r) => shiftMonth(r, 1))}
         >
           <RegimeToggle value={regime} onChange={setRegime} />
-          <div className="flex gap-1 rounded-lg border border-c-border bg-c-surface p-0.5">
-            {(['realizado', 'projetivo'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                className={cn(
-                  'rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-colors',
-                  mode === m ? 'bg-brand-500 text-white' : 'text-c-text-2 hover:bg-c-subtle',
-                )}
-              >
-                {m}
-              </button>
-            ))}
-          </div>
           {canClose && (
             <button
               type="button"

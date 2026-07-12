@@ -96,6 +96,19 @@ export type TransactionFilters = {
   search?: string
   installmentGroupId?: string
   page?: number
+  limit?: number
+}
+
+// UsedSubcategory — subcategoria efetivamente usada no período (E2), para popular
+// o filtro de subcategoria só com o que é relevante no mês.
+export type UsedSubcategory = {
+  id: string
+  name: string
+  categoryId: string
+  categoryName: string
+  type: TransactionType
+  count: number
+  total: number
 }
 
 export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {

@@ -1,7 +1,6 @@
 // Tipos do relatório — espelham o contrato do backend (Apêndice B, camelCase).
 
 export type ReportScope = 'monthly' | 'quarterly' | 'semiannual' | 'annual'
-export type ReportMode = 'realizado' | 'projetivo'
 export type Regime = 'caixa' | 'competencia'
 export type LockState = 'aberto' | 'fechado_ajustavel' | 'fechado_bloqueado'
 
@@ -71,12 +70,6 @@ export type MonthlyPoint = {
   saldoAcumulado: number
 }
 
-export type Projetado = {
-  totalDespesas: number
-  totalReceitas: number
-  saldoPeriodo: number
-}
-
 export type Report = {
   scope: ReportScope
   reference?: string
@@ -84,7 +77,6 @@ export type Report = {
   quarter?: number
   half?: number
   regime?: Regime
-  mode?: ReportMode
   status?: LockState
   kpis: KPIs
   analitico: Analitico
@@ -94,7 +86,6 @@ export type Report = {
   includedMonths?: string[]
   missingMonths?: string[]
   monthly?: MonthlyPoint[]
-  projetado?: Projetado | null
 }
 
 export type ClosingView = {

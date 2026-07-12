@@ -9,11 +9,11 @@ import {
   closeMonth,
   fetchLockState,
 } from './api'
-import type { ReportMode, Regime } from './types'
+import type { Regime } from './types'
 
 export const reportKeys = {
   all: ['reports'] as const,
-  monthly: (ref: string, mode: ReportMode, regime: Regime) => [...reportKeys.all, 'monthly', ref, mode, regime] as const,
+  monthly: (ref: string, regime: Regime) => [...reportKeys.all, 'monthly', ref, regime] as const,
   quarterly: (y: number, q: number, regime: Regime) => [...reportKeys.all, 'quarterly', y, q, regime] as const,
   semiannual: (y: number, h: number, regime: Regime) => [...reportKeys.all, 'semiannual', y, h, regime] as const,
   annual: (y: number, regime: Regime) => [...reportKeys.all, 'annual', y, regime] as const,
@@ -21,10 +21,10 @@ export const reportKeys = {
   lock: (ref: string) => [...reportKeys.all, 'lock', ref] as const,
 }
 
-export function useMonthlyReport(reference: string, mode: ReportMode, regime: Regime = 'caixa', enabled = true) {
+export function useMonthlyReport(reference: string, regime: Regime = 'caixa', enabled = true) {
   return useQuery({
-    queryKey: reportKeys.monthly(reference, mode, regime),
-    queryFn: () => fetchMonthly(reference, mode, regime),
+    queryKey: reportKeys.monthly(reference, regime),
+    queryFn: () => fetchMonthly(reference, regime),
     staleTime: 30_000,
     enabled,
   })

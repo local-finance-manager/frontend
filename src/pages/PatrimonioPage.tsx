@@ -13,6 +13,7 @@ import { MovimentoDialog } from '@/features/patrimonio/components/MovimentoDialo
 import { MarketValueDialog } from '@/features/patrimonio/components/MarketValueDialog'
 import { SaldoInicialDialog } from '@/features/patrimonio/components/SaldoInicialDialog'
 import { ExtratoDialog } from '@/features/patrimonio/components/ExtratoDialog'
+import { GlobalExtrato } from '@/features/patrimonio/components/GlobalExtrato'
 import { GuardadoDonut } from '@/features/patrimonio/components/GuardadoDonut'
 import type { Caixinha } from '@/features/patrimonio/types'
 
@@ -145,6 +146,8 @@ export default function PatrimonioPage() {
           ))}
         </div>
       )}
+
+      {!isError && <GlobalExtrato />}
 
       <CaixinhaFormDialog
         open={formDialog.open}

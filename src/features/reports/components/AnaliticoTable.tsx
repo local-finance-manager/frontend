@@ -7,10 +7,12 @@ import type { CatAnalitico } from '../types'
 type Props = {
   title: string
   rows: CatAnalitico[]
+  // Quando presente, as subcategorias viram clicáveis (drill-down E4).
+  onDrill?: (sub: { subcategoryId: string; name: string; total: number; categoryName: string }) => void
 }
 
 /** Tabela analítica com drill-down: categoria → subcategorias (RF-REL-11). */
-export function AnaliticoTable({ title, rows }: Props) {
+export function AnaliticoTable({ title, rows, onDrill }: Props) {
   const [open, setOpen] = useState<Set<string>>(new Set())
 
   function toggle(id: string) {
@@ -60,18 +62,42 @@ export function AnaliticoTable({ title, rows }: Props) {
               </button>
               {isOpen && (
                 <div className="bg-c-subtle/40">
-                  {cat.subcategorias.map((s) => (
-                    <div
-                      key={s.subcategoryId}
-                      className="flex items-center gap-2 py-1.5 pl-10 pr-3 text-sm"
-                    >
-                      <span className="min-w-0 flex-1 truncate text-c-text-2">{s.name}</span>
-                      <span className="shrink-0 text-xs text-c-text-3">{s.percent}%</span>
-                      <span className="w-28 shrink-0 text-right text-c-text-2">
-                        {formatCurrency(s.total)}
-                      </span>
-                    </div>
-                  ))}
+                  {cat.subcategorias.map((s) => {
+                    const content = (
+                      <>
+                        <span className="min-w-0 flex-1 truncate text-c-text-2">{s.name}</span>
+                        <span className="shrink-0 text-xs text-c-text-3">{s.percent}%</span>
+                        <span className="w-28 shrink-0 text-right text-c-text-2">
+                          {formatCurrency(s.total)}
+                        </span>
+                      </>
+                    )
+                    return onDrill ? (
+                      <button
+                        key={s.subcategoryId}
+                        type="button"
+                        onClick={() =>
+                          onDrill({
+                            subcategoryId: s.subcategoryId,
+                            name: s.name,
+                            total: s.total,
+                            categoryName: cat.categoryName,
+                          })
+                        }
+                        className="flex w-full items-center gap-2 py-1.5 pl-10 pr-3 text-left text-sm hover:bg-c-subtle"
+                        title="Ver lançamentos desta subcategoria"
+                      >
+                        {content}
+                      </button>
+                    ) : (
+                      <div
+                        key={s.subcategoryId}
+                        className="flex items-center gap-2 py-1.5 pl-10 pr-3 text-sm"
+                      >
+                        {content}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </div>

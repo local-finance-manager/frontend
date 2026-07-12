@@ -3,6 +3,7 @@ import { creditCardKeys } from '@/features/credit-cards/queries'
 import {
   fetchTransactions,
   fetchTransaction,
+  fetchUsedSubcategories,
   createTransaction,
   updateTransaction,
   confirmTransaction,
@@ -19,6 +20,8 @@ export const transactionKeys = {
   all: ['transactions'] as const,
   lists: () => [...transactionKeys.all, 'list'] as const,
   list: (filters: TransactionFilters) => [...transactionKeys.lists(), filters] as const,
+  usedSubcategories: (type: string | undefined, from: string | undefined, to: string | undefined) =>
+    [...transactionKeys.all, 'used-subcategories', { type: type ?? null, from: from ?? null, to: to ?? null }] as const,
   detail: (id: string) => [...transactionKeys.all, 'detail', id] as const,
 }
 
@@ -33,10 +36,25 @@ function invalidateRelated(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: ['installments'] })
 }
 
-export function useTransactions(filters: TransactionFilters) {
+export function useTransactions(filters: TransactionFilters, enabled = true) {
   return useQuery({
     queryKey: transactionKeys.list(filters),
     queryFn: () => fetchTransactions(filters),
+    staleTime: 30_000,
+    enabled,
+  })
+}
+
+// Subcategorias usadas no período (E2). Só depende de tipo + intervalo → recarrega
+// ao trocar o mês/tipo, não a cada mudança de subcategoria/busca/página.
+export function useUsedSubcategories(filters: TransactionFilters) {
+  return useQuery({
+    queryKey: transactionKeys.usedSubcategories(
+      filters.type,
+      filters.competenceDateFrom,
+      filters.competenceDateTo,
+    ),
+    queryFn: () => fetchUsedSubcategories(filters),
     staleTime: 30_000,
   })
 }

@@ -3,6 +3,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useUsedSubcategories } from '../queries'
 import { PAYMENT_METHOD_LABELS, type TransactionFilters as Filters } from '../types'
 
 type Props = {
@@ -15,6 +16,9 @@ export function TransactionFilters({ filters, onFilterChange, onNavigateMonth }:
   const monthLabel = filters.competenceDateFrom
     ? format(new Date(filters.competenceDateFrom + 'T12:00:00'), 'MMMM yyyy', { locale: ptBR })
     : ''
+
+  // E2 — só as subcategorias usadas no período (recarrega ao trocar mês/tipo).
+  const { data: usedSubs = [] } = useUsedSubcategories(filters)
 
   const [searchInput, setSearchInput] = useState(filters.search ?? '')
   const debouncedSearch = useDebounce(searchInput, 300)
@@ -76,13 +80,28 @@ export function TransactionFilters({ filters, onFilterChange, onNavigateMonth }:
 
       <select
         value={filters.paymentMethod ?? ''}
-        onChange={(e) => onFilterChange('paymentMethod', e.target.value || undefined)}
+        onChange={(e) => onFilterChange('payment_method', e.target.value || undefined)}
         className="rounded-lg border border-c-border bg-c-surface px-3 py-2 text-sm text-c-text-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="">Forma de pagamento</option>
         {Object.entries(PAYMENT_METHOD_LABELS).map(([value, label]) => (
           <option key={value} value={value}>
             {label}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={filters.subcategoryId ?? ''}
+        onChange={(e) => onFilterChange('subcategory_id', e.target.value || undefined)}
+        disabled={usedSubs.length === 0}
+        className="max-w-[14rem] rounded-lg border border-c-border bg-c-surface px-3 py-2 text-sm text-c-text-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+        title={usedSubs.length === 0 ? 'Nenhuma subcategoria usada neste período' : 'Filtrar por subcategoria'}
+      >
+        <option value="">Subcategoria</option>
+        {usedSubs.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.categoryName} › {s.name} ({s.count})
           </option>
         ))}
       </select>

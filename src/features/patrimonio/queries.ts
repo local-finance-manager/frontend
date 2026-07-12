@@ -13,6 +13,7 @@ import {
   resgatar,
   registrarRendimento,
   fetchExtrato,
+  fetchGlobalMovements,
   deleteMovimento,
 } from './api'
 import { transactionKeys } from '@/features/transactions/queries'
@@ -24,6 +25,7 @@ export const patrimonioKeys = {
   lists: () => [...patrimonioKeys.all, 'list'] as const,
   list: (archived: boolean) => [...patrimonioKeys.lists(), { archived }] as const,
   extrato: (id: string) => [...patrimonioKeys.all, 'extrato', id] as const,
+  movements: (page: number) => [...patrimonioKeys.all, 'movements', page] as const,
 }
 
 // invalida tudo que depende de saldo/disponível (patrimônio + saldo dos lançamentos).
@@ -49,6 +51,15 @@ export function useExtrato(id: string, enabled = true) {
     queryKey: patrimonioKeys.extrato(id),
     queryFn: () => fetchExtrato(id),
     enabled: enabled && !!id,
+    staleTime: 30_000,
+  })
+}
+
+// Extrato global paginado (E3) — mais novo → mais antigo.
+export function useGlobalMovements(page = 1) {
+  return useQuery({
+    queryKey: patrimonioKeys.movements(page),
+    queryFn: () => fetchGlobalMovements(page),
     staleTime: 30_000,
   })
 }

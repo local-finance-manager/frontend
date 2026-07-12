@@ -5,6 +5,7 @@ import type {
   TransactionFilters,
   CreateTransactionInput,
   UpdateTransactionInput,
+  UsedSubcategory,
 } from './types'
 
 // ── Raw shapes (borda JSON — nunca saem deste arquivo) ──────────────────────
@@ -114,6 +115,7 @@ export async function fetchTransactions(
   if (filters.search) params.search = filters.search
   if (filters.installmentGroupId) params.installment_group_id = filters.installmentGroupId
   if (filters.page) params.page = filters.page
+  if (filters.limit) params.limit = filters.limit
 
   const { data } = await apiClient.get<ListApiResp>('/transactions', { params })
 
@@ -127,6 +129,40 @@ export async function fetchTransactions(
       totalPages: data.pagination.total_pages,
     },
   }
+}
+
+type UsedSubcategoryApiResp = {
+  id: string
+  name: string
+  category_id: string
+  category_name: string
+  type: string
+  count: number
+  total: number
+}
+
+// Subcategorias usadas no período (E2) — só o intervalo/tipo importam para o recorte.
+export async function fetchUsedSubcategories(
+  filters: TransactionFilters = {},
+): Promise<UsedSubcategory[]> {
+  const params: Record<string, string | undefined> = {}
+  if (filters.type) params.type = filters.type
+  if (filters.competenceDateFrom) params.competence_date_from = filters.competenceDateFrom
+  if (filters.competenceDateTo) params.competence_date_to = filters.competenceDateTo
+
+  const { data } = await apiClient.get<{ data: UsedSubcategoryApiResp[] }>(
+    '/transactions/used-subcategories',
+    { params },
+  )
+  return (data.data ?? []).map((r) => ({
+    id: r.id,
+    name: r.name,
+    categoryId: r.category_id,
+    categoryName: r.category_name,
+    type: r.type as UsedSubcategory['type'],
+    count: r.count,
+    total: r.total,
+  }))
 }
 
 export async function fetchTransaction(id: string): Promise<Transaction> {

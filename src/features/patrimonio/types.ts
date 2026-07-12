@@ -42,6 +42,23 @@ export type MovementPage = {
   pagination: { page: number; limit: number; total: number; totalPages: number }
 }
 
+// Extrato global (E3) — um movimento de qualquer caixinha, com o nome de origem.
+export type GlobalMovement = {
+  transactionId: string
+  caixinhaId: string
+  caixinhaNome: string
+  direction: 'aporte' | 'resgate'
+  amount: number
+  date: string
+  description: string
+  createdAt: string
+}
+
+export type GlobalMovementPage = {
+  data: GlobalMovement[]
+  pagination: { page: number; limit: number; total: number; totalPages: number }
+}
+
 export type CreateCaixinhaInput = {
   name: string
   type: CaixinhaType

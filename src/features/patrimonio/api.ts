@@ -5,6 +5,8 @@ import type {
   Overview,
   Movement,
   MovementPage,
+  GlobalMovement,
+  GlobalMovementPage,
   CreateCaixinhaInput,
   UpdateCaixinhaInput,
   MovementInput,
@@ -82,6 +84,21 @@ function parseMovementFromApi(raw: MovementApiResp): Movement {
     amount: raw.amount,
     date: raw.date,
     description: raw.description,
+  }
+}
+
+type GlobalMovementApiResp = MovementApiResp & { caixinha_nome: string; created_at: string }
+
+function parseGlobalMovementFromApi(raw: GlobalMovementApiResp): GlobalMovement {
+  return {
+    transactionId: raw.transaction_id,
+    caixinhaId: raw.caixinha_id,
+    caixinhaNome: raw.caixinha_nome,
+    direction: raw.direction as 'aporte' | 'resgate',
+    amount: raw.amount,
+    date: raw.date,
+    description: raw.description,
+    createdAt: raw.created_at,
   }
 }
 
@@ -186,6 +203,23 @@ export async function fetchExtrato(id: string, page = 1, limit = 100): Promise<M
   }>(`/patrimonio/caixinhas/${id}/extrato`, { params: { page, limit } })
   return {
     data: (data.data ?? []).map(parseMovementFromApi),
+    pagination: {
+      page: data.pagination.page,
+      limit: data.pagination.limit,
+      total: data.pagination.total,
+      totalPages: data.pagination.total_pages,
+    },
+  }
+}
+
+// Extrato global (E3) — movimentos de todas as caixinhas, mais novo → mais antigo.
+export async function fetchGlobalMovements(page = 1, limit = 20): Promise<GlobalMovementPage> {
+  const { data } = await apiClient.get<{
+    data: GlobalMovementApiResp[]
+    pagination: { page: number; limit: number; total: number; total_pages: number }
+  }>('/patrimonio/movements', { params: { page, limit } })
+  return {
+    data: (data.data ?? []).map(parseGlobalMovementFromApi),
     pagination: {
       page: data.pagination.page,
       limit: data.pagination.limit,

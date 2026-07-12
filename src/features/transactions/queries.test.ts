@@ -103,6 +103,7 @@ describe('useCreateTransaction', () => {
       installmentGroupId: null,
       installmentNumber: null,
       installmentTotal: null,
+      recurrenceId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       subcategory: {
@@ -159,6 +160,7 @@ describe('useConfirmTransaction', () => {
       installmentGroupId: null,
       installmentNumber: null,
       installmentTotal: null,
+      recurrenceId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       subcategory: {
@@ -218,6 +220,7 @@ describe('useUpdateTransaction', () => {
       installmentGroupId: null,
       installmentNumber: null,
       installmentTotal: null,
+      recurrenceId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       subcategory: {

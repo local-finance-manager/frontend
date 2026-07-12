@@ -13,6 +13,7 @@ type Props = {
   open: boolean
   reference: string
   destination: Destination | null
+  pendingIncomeCount?: number
   onOpenChange: (open: boolean) => void
 }
 
@@ -40,7 +41,7 @@ type FormState = {
 
 // Reaproveita os campos do lançamento (composição, sem importar internos da feature
 // de transactions): status é sempre "realizado" (materialização só com renda realizada).
-export function MaterializeDialog({ open, reference, destination, onOpenChange }: Props) {
+export function MaterializeDialog({ open, reference, destination, pendingIncomeCount = 0, onOpenChange }: Props) {
   const [form, setForm] = useState<FormState>({
     amount: 0,
     subcategoryId: '',
@@ -115,6 +116,12 @@ export function MaterializeDialog({ open, reference, destination, onOpenChange }
           </Dialog.Description>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {pendingIncomeCount > 0 && (
+              <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300">
+                Há {pendingIncomeCount} receita(s) em aberto neste mês. Você ainda pode materializar, mas o
+                lançamento será barrado se deixar o saldo disponível negativo.
+              </div>
+            )}
             <div className="rounded-md bg-c-subtle px-3 py-2 text-sm">
               <span className="text-c-text-3">Lançamento: </span>
               <span className="font-medium text-c-text">{destination.name}</span>

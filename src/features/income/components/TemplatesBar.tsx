@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { LayoutTemplate, Copy, Save, XIcon } from 'lucide-react'
+import { LayoutTemplate, Copy, Save, Trash2, XIcon } from 'lucide-react'
 import { isAppError } from '@/lib/api-client'
 import { toast } from '@/hooks/useToast'
-import { useTemplates, useApplyTemplate, useCopyPrevious, useCreateTemplate } from '../queries'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useTemplates, useApplyTemplate, useCopyPrevious, useCreateTemplate, useDeleteTemplate } from '../queries'
 import type { Plan, TemplateItem } from '../types'
 
 function toTemplateItems(plan: Plan): TemplateItem[] {
@@ -24,11 +25,16 @@ export function TemplatesBar({ plan, reference }: { plan: Plan; reference: strin
   const [saveOpen, setSaveOpen] = useState(false)
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const templates = useTemplates()
   const apply = useApplyTemplate()
   const copyPrev = useCopyPrevious()
   const createTpl = useCreateTemplate()
+  const deleteTpl = useDeleteTemplate()
+
+  const selectedTemplateName = (templates.data ?? []).find((t) => t.id === templateId)?.name ?? ''
 
   async function handleApply() {
     if (!templateId) return
@@ -54,6 +60,19 @@ export function TemplatesBar({ plan, reference }: { plan: Plan; reference: strin
         description: isAppError(err) ? err.message : undefined,
         variant: 'destructive',
       })
+    }
+  }
+
+  async function handleDelete() {
+    if (!templateId) return
+    setDeleteError(null)
+    try {
+      await deleteTpl.mutateAsync(templateId)
+      toast({ title: 'Template excluído' })
+      setTemplateId('')
+      setDeleteOpen(false)
+    } catch (err) {
+      setDeleteError(isAppError(err) && err.displayable ? err.message : 'Algo deu errado. Tente novamente.')
     }
   }
 
@@ -89,6 +108,18 @@ export function TemplatesBar({ plan, reference }: { plan: Plan; reference: strin
         </select>
         <button type="button" onClick={handleApply} disabled={!templateId || apply.isPending} className={btnCls}>
           Aplicar
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setDeleteError(null)
+            setDeleteOpen(true)
+          }}
+          disabled={!templateId || deleteTpl.isPending}
+          className="flex items-center gap-1.5 rounded-md border border-c-border bg-c-surface px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-40 dark:hover:bg-red-900/20"
+          title={templateId ? 'Excluir template selecionado' : 'Escolha um template para excluir'}
+        >
+          <Trash2 size={14} /> Excluir
         </button>
 
         <button type="button" onClick={handleCopyPrev} disabled={copyPrev.isPending} className={btnCls}>
@@ -158,6 +189,17 @@ export function TemplatesBar({ plan, reference }: { plan: Plan; reference: strin
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Excluir template"
+        description={`Excluir o template "${selectedTemplateName}"? Os destinos já aplicados a algum mês não são afetados.`}
+        confirmLabel="Excluir"
+        isLoading={deleteTpl.isPending}
+        error={deleteError}
+        onConfirm={handleDelete}
+      />
     </>
   )
 }

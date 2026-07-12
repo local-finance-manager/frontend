@@ -56,6 +56,10 @@ export async function createTemplate(name: string, items: TemplateItem[]): Promi
   return data
 }
 
+export async function deleteTemplate(id: string): Promise<void> {
+  await apiClient.delete(`/income/templates/${id}`)
+}
+
 export async function applyTemplate(reference: string, templateId: string): Promise<void> {
   await apiClient.post(`/income/plan/${reference}/apply-template`, { templateId })
 }

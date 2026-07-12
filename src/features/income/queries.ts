@@ -11,6 +11,7 @@ import {
   materializeAll,
   fetchTemplates,
   createTemplate,
+  deleteTemplate,
   applyTemplate,
   copyPrevious,
 } from './api'
@@ -98,6 +99,14 @@ export function useCreateTemplate() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ name, items }: { name: string; items: TemplateItem[] }) => createTemplate(name, items),
+    onSuccess: () => qc.invalidateQueries({ queryKey: incomeKeys.templates() }),
+  })
+}
+
+export function useDeleteTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteTemplate(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: incomeKeys.templates() }),
   })
 }

@@ -4,8 +4,9 @@ import { formatCurrency } from '@/lib/format'
 import { isAppError } from '@/lib/api-client'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { toast } from '@/hooks/useToast'
+import { useCaixinhas } from '@/features/patrimonio/queries'
 import { useDeleteDestination, useUndoMaterialization } from '../queries'
-import { KIND_LABELS, type Destination, type Plan } from '../types'
+import { type Destination, type Plan } from '../types'
 
 type Props = {
   plan: Plan
@@ -13,14 +14,50 @@ type Props = {
   onMaterialize: (d: Destination) => void
 }
 
-function modeLabel(d: Destination): string {
+// texto da regra concreta (ex.: "25%" ou "R$ 800,00")
+function ruleText(d: Destination): string {
   if (d.mode === 'percentual') return `${(d.percentage ?? 0) / 100}%`
-  return `fixo ${formatCurrency(d.fixedAmount ?? 0)}`
+  return formatCurrency(d.fixedAmount ?? 0)
+}
+
+// badge do modo: "Valor Fixo" ou "%"
+function modeBadge(d: Destination): string {
+  return d.mode === 'percentual' ? '%' : 'Valor Fixo'
+}
+
+// participação do destino na receita total do mês (null quando não há receita)
+function incomeShare(amount: number, total: number): string | null {
+  if (total <= 0) return null
+  return `${(Math.round((amount / total) * 1000) / 10).toString().replace('.', ',')}% da receita`
+}
+
+type Badge = { label: string; className: string }
+
+// classifica o destino: despesa, vinculado a uma caixinha, ou investimento avulso
+function kindBadge(d: Destination, caixinhaName: string | undefined): Badge {
+  if (d.kind === 'despesa') {
+    return {
+      label: 'Despesa',
+      className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    }
+  }
+  if (d.caixinhaId) {
+    return {
+      label: `Caixinha: ${caixinhaName ?? '—'}`,
+      className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+    }
+  }
+  return {
+    label: 'Avulso',
+    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  }
 }
 
 export function DestinationList({ plan, onEdit, onMaterialize }: Props) {
   const [confirm, setConfirm] = useState<{ kind: 'delete' | 'undo'; dest: Destination } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { data: caixinhas = [] } = useCaixinhas()
+  const caixinhaName = (id: string | null) => caixinhas.find((c) => c.id === id)?.name
   const del = useDeleteDestination()
   const undo = useUndoMaterialization()
   const isLoading = del.isPending || undo.isPending
@@ -66,15 +103,28 @@ export function DestinationList({ plan, onEdit, onMaterialize }: Props) {
           <tbody className="divide-y divide-c-border">
             {plan.destinations.map((d) => {
               const materialized = d.status === 'materializado'
+              const amount = materialized ? d.materializedAmount ?? d.computedAmount : d.computedAmount
+              const kb = kindBadge(d, caixinhaName(d.caixinhaId))
+              const share = incomeShare(amount, plan.income.total)
               return (
                 <tr key={d.id} className="hover:bg-c-subtle/50">
                   <td className="px-4 py-3">
                     <div className="font-medium text-c-text">{d.name}</div>
-                    <span className="text-xs text-c-text-3">{KIND_LABELS[d.kind]}</span>
+                    <span
+                      className={`mt-1 inline-block rounded px-1.5 py-0.5 text-xs font-medium ${kb.className}`}
+                    >
+                      {kb.label}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 text-c-text-2">{modeLabel(d)}</td>
-                  <td className="px-4 py-3 text-right font-medium text-c-text">
-                    {formatCurrency(materialized ? d.materializedAmount ?? d.computedAmount : d.computedAmount)}
+                  <td className="px-4 py-3 text-c-text-2">
+                    <span className="rounded bg-c-subtle px-1.5 py-0.5 text-xs font-medium text-c-text-2">
+                      {modeBadge(d)}
+                    </span>
+                    <div className="mt-1 text-xs text-c-text-3">{ruleText(d)}</div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="font-medium text-c-text">{formatCurrency(amount)}</div>
+                    {share && <div className="text-xs text-c-text-3">{share}</div>}
                   </td>
                   <td className="px-4 py-3">
                     {materialized ? (

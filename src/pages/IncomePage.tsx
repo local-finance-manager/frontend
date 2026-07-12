@@ -42,7 +42,7 @@ export default function IncomePage() {
     try {
       const res = await bulk.mutateAsync(reference)
       const parts = [`${res.materialized.length} materializado(s)`]
-      if (res.skipped.length > 0) parts.push(`${res.skipped.length} pulado(s) (sem subcategoria)`)
+      if (res.skipped.length > 0) parts.push(`${res.skipped.length} pulado(s)`)
       toast({ title: 'Materialização em lote concluída', description: parts.join(' · ') })
       setBulkOpen(false)
     } catch (err) {
@@ -153,6 +153,7 @@ export default function IncomePage() {
         open={materializing !== null}
         reference={reference}
         destination={materializing}
+        pendingIncomeCount={plan?.income.pendingCount ?? 0}
         onOpenChange={(o) => {
           if (!o) setMaterializing(null)
         }}
@@ -161,7 +162,13 @@ export default function IncomePage() {
         open={bulkOpen}
         onOpenChange={setBulkOpen}
         title="Materializar todos os destinos"
-        description={`Isto cria lançamentos realizados para os ${plannedCount} destino(s) planejado(s) com subcategoria definida. Destinos sem subcategoria são pulados.`}
+        description={
+          `Isto cria lançamentos realizados para os ${plannedCount} destino(s) planejado(s) com subcategoria definida. ` +
+          `Destinos sem subcategoria — ou que deixariam o saldo disponível negativo — são pulados.` +
+          (plan && !plan.income.allRealized
+            ? ` Atenção: há ${plan.income.pendingCount} receita(s) em aberto neste mês.`
+            : '')
+        }
         confirmLabel="Materializar todos"
         isLoading={bulk.isPending}
         onConfirm={handleBulk}

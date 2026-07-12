@@ -201,6 +201,46 @@ describe('fetchTransactions', () => {
   })
 })
 
+// ── fetchUsedSubcategories ────────────────────────────────────────────────────
+
+describe('fetchUsedSubcategories', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('chama GET /transactions/used-subcategories com intervalo/tipo e parseia', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    const mockGet = vi.mocked(apiClient.get)
+    mockGet.mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            id: 'sub-1',
+            name: 'Aluguel',
+            category_id: 'cat-1',
+            category_name: 'Moradia',
+            type: 'despesa',
+            count: 2,
+            total: 200000,
+          },
+        ],
+      },
+    })
+
+    const { fetchUsedSubcategories } = await import('./api')
+    const result = await fetchUsedSubcategories({
+      type: 'despesa',
+      competenceDateFrom: '2026-06-01',
+      competenceDateTo: '2026-06-30',
+    })
+
+    expect(mockGet).toHaveBeenCalledWith('/transactions/used-subcategories', {
+      params: { type: 'despesa', competence_date_from: '2026-06-01', competence_date_to: '2026-06-30' },
+    })
+    expect(result).toEqual([
+      { id: 'sub-1', name: 'Aluguel', categoryId: 'cat-1', categoryName: 'Moradia', type: 'despesa', count: 2, total: 200000 },
+    ])
+  })
+})
+
 // ── createTransaction ─────────────────────────────────────────────────────────
 
 describe('createTransaction', () => {

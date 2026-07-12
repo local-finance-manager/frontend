@@ -35,7 +35,7 @@ function wrapperFor(client: QueryClient) {
 describe('reportKeys', () => {
   it('monta as chaves', () => {
     expect(reportKeys.all).toEqual(['reports'])
-    expect(reportKeys.monthly('2026-06', 'realizado', 'caixa')).toEqual(['reports', 'monthly', '2026-06', 'realizado', 'caixa'])
+    expect(reportKeys.monthly('2026-06', 'caixa')).toEqual(['reports', 'monthly', '2026-06', 'caixa'])
     expect(reportKeys.quarterly(2026, 2, 'caixa')).toEqual(['reports', 'quarterly', 2026, 2, 'caixa'])
     expect(reportKeys.semiannual(2026, 1, 'caixa')).toEqual(['reports', 'semiannual', 2026, 1, 'caixa'])
     expect(reportKeys.annual(2026, 'caixa')).toEqual(['reports', 'annual', 2026, 'caixa'])
@@ -49,22 +49,22 @@ describe('hooks de leitura', () => {
 
   it('useMonthlyReport chama fetchMonthly', async () => {
     const { fetchMonthly } = await import('./api')
-    const { result } = renderHook(() => useMonthlyReport('2026-06', 'projetivo', 'caixa'), { wrapper: wrapperFor(makeClient()) })
+    const { result } = renderHook(() => useMonthlyReport('2026-06', 'caixa'), { wrapper: wrapperFor(makeClient()) })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(fetchMonthly).toHaveBeenCalledWith('2026-06', 'projetivo', 'caixa')
+    expect(fetchMonthly).toHaveBeenCalledWith('2026-06', 'caixa')
   })
 
   it('useMonthlyReport não dispara quando enabled=false', async () => {
     const { fetchMonthly } = await import('./api')
-    renderHook(() => useMonthlyReport('2026-06', 'realizado', 'caixa', false), { wrapper: wrapperFor(makeClient()) })
+    renderHook(() => useMonthlyReport('2026-06', 'caixa', false), { wrapper: wrapperFor(makeClient()) })
     expect(fetchMonthly).not.toHaveBeenCalled()
   })
 
   it('useMonthlyReport em competência', async () => {
     const { fetchMonthly } = await import('./api')
-    const { result } = renderHook(() => useMonthlyReport('2026-06', 'realizado', 'competencia'), { wrapper: wrapperFor(makeClient()) })
+    const { result } = renderHook(() => useMonthlyReport('2026-06', 'competencia'), { wrapper: wrapperFor(makeClient()) })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(fetchMonthly).toHaveBeenCalledWith('2026-06', 'realizado', 'competencia')
+    expect(fetchMonthly).toHaveBeenCalledWith('2026-06', 'competencia')
   })
 
   it('useQuarterly/Semiannual/Annual chamam suas fetchs', async () => {

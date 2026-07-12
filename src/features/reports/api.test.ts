@@ -11,34 +11,24 @@ const REPORT = { scope: 'monthly', reference: '2026-06', kpis: {}, analitico: {}
 describe('reports/api', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('fetchMonthly envia reference e mode', async () => {
+  it('fetchMonthly envia reference e regime padrão caixa', async () => {
     const apiClient = (await import('@/lib/api-client')).default
     vi.mocked(apiClient.get).mockResolvedValueOnce({ data: REPORT })
     const { fetchMonthly } = await import('./api')
-    const r = await fetchMonthly('2026-06', 'projetivo')
+    const r = await fetchMonthly('2026-06')
     expect(apiClient.get).toHaveBeenCalledWith('/reports/monthly', {
-      params: { reference: '2026-06', mode: 'projetivo', regime: 'caixa' },
+      params: { reference: '2026-06', regime: 'caixa' },
     })
     expect(r.reference).toBe('2026-06')
-  })
-
-  it('fetchMonthly default mode realizado + regime caixa', async () => {
-    const apiClient = (await import('@/lib/api-client')).default
-    vi.mocked(apiClient.get).mockResolvedValueOnce({ data: REPORT })
-    const { fetchMonthly } = await import('./api')
-    await fetchMonthly('2026-06')
-    expect(apiClient.get).toHaveBeenCalledWith('/reports/monthly', {
-      params: { reference: '2026-06', mode: 'realizado', regime: 'caixa' },
-    })
   })
 
   it('fetchMonthly aceita regime competência', async () => {
     const apiClient = (await import('@/lib/api-client')).default
     vi.mocked(apiClient.get).mockResolvedValueOnce({ data: REPORT })
     const { fetchMonthly } = await import('./api')
-    await fetchMonthly('2026-06', 'realizado', 'competencia')
+    await fetchMonthly('2026-06', 'competencia')
     expect(apiClient.get).toHaveBeenCalledWith('/reports/monthly', {
-      params: { reference: '2026-06', mode: 'realizado', regime: 'competencia' },
+      params: { reference: '2026-06', regime: 'competencia' },
     })
   })
 

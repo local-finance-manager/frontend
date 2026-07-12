@@ -14,6 +14,7 @@ import {
   resgatar,
   registrarRendimento,
   fetchExtrato,
+  fetchGlobalMovements,
   deleteMovimento,
 } from './api'
 
@@ -177,6 +178,31 @@ describe('extrato / delete / archive', () => {
     const ex = await fetchExtrato('cx1')
     expect(apiClient.get).toHaveBeenCalledWith('/patrimonio/caixinhas/cx1/extrato', { params: { page: 1, limit: 100 } })
     expect(ex.data[0].transactionId).toBe('m1')
+    expect(ex.pagination.totalPages).toBe(1)
+  })
+  it('fetchGlobalMovements parseia data + nome da caixinha + pagination', async () => {
+    const apiClient = (await import('@/lib/api-client')).default
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        data: [
+          {
+            transaction_id: 'm1',
+            caixinha_id: 'cx1',
+            caixinha_nome: 'Reserva',
+            direction: 'resgate',
+            amount: 500,
+            date: '2026-07-02',
+            description: 'saque',
+            created_at: '2026-07-02T10:00:00Z',
+          },
+        ],
+        pagination: { page: 1, limit: 20, total: 1, total_pages: 1 },
+      },
+    })
+    const ex = await fetchGlobalMovements()
+    expect(apiClient.get).toHaveBeenCalledWith('/patrimonio/movements', { params: { page: 1, limit: 20 } })
+    expect(ex.data[0].caixinhaNome).toBe('Reserva')
+    expect(ex.data[0].createdAt).toBe('2026-07-02T10:00:00Z')
     expect(ex.pagination.totalPages).toBe(1)
   })
   it('deleteCaixinha / archive / unarchive / deleteMovimento', async () => {

@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import {
   transactionKeys,
   useTransactions,
+  useUsedSubcategories,
   useCreateTransaction,
   useUpdateTransaction,
   useConfirmTransaction,
@@ -20,6 +21,7 @@ vi.mock('./api', () => ({
     pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
   }),
   fetchTransaction: vi.fn(),
+  fetchUsedSubcategories: vi.fn().mockResolvedValue([]),
   createTransaction: vi.fn(),
   updateTransaction: vi.fn(),
   confirmTransaction: vi.fn(),
@@ -56,6 +58,31 @@ describe('transactionKeys', () => {
 
   it('detail(id) contém ["transactions", "detail", id]', () => {
     expect(transactionKeys.detail('trx-1')).toEqual(['transactions', 'detail', 'trx-1'])
+  })
+
+  it('usedSubcategories embute tipo e intervalo', () => {
+    expect(transactionKeys.usedSubcategories('despesa', '2026-06-01', '2026-06-30')).toEqual([
+      'transactions',
+      'used-subcategories',
+      { type: 'despesa', from: '2026-06-01', to: '2026-06-30' },
+    ])
+  })
+})
+
+// ── useUsedSubcategories ──────────────────────────────────────────────────────
+
+describe('useUsedSubcategories', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('chama fetchUsedSubcategories com os filtros', async () => {
+    const { fetchUsedSubcategories } = await import('./api')
+    const mockFetch = vi.mocked(fetchUsedSubcategories)
+
+    const filters = { type: 'despesa' as const, competenceDateFrom: '2026-06-01', competenceDateTo: '2026-06-30' }
+    const { result } = renderHook(() => useUsedSubcategories(filters), { wrapper: makeWrapper() })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(mockFetch).toHaveBeenCalledWith(filters)
   })
 })
 

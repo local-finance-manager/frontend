@@ -13,6 +13,7 @@ import {
   useResgatar,
   useRegistrarRendimento,
   useDeleteMovimento,
+  useGlobalMovements,
 } from './queries'
 
 vi.mock('./api', () => ({
@@ -31,6 +32,7 @@ vi.mock('./api', () => ({
   resgatar: vi.fn().mockResolvedValue('tx2'),
   registrarRendimento: vi.fn().mockResolvedValue('tx3'),
   fetchExtrato: vi.fn(),
+  fetchGlobalMovements: vi.fn().mockResolvedValue({ data: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } }),
   deleteMovimento: vi.fn().mockResolvedValue(undefined),
 }))
 
@@ -46,6 +48,17 @@ describe('patrimonioKeys', () => {
     expect(patrimonioKeys.overview()).toEqual(['patrimonio', 'overview'])
     expect(patrimonioKeys.list(false)).toEqual(['patrimonio', 'list', { archived: false }])
     expect(patrimonioKeys.extrato('cx1')).toEqual(['patrimonio', 'extrato', 'cx1'])
+    expect(patrimonioKeys.movements(2)).toEqual(['patrimonio', 'movements', 2])
+  })
+})
+
+describe('useGlobalMovements', () => {
+  beforeEach(() => vi.clearAllMocks())
+  it('chama fetchGlobalMovements com a página', async () => {
+    const { fetchGlobalMovements } = await import('./api')
+    const { result } = renderHook(() => useGlobalMovements(2), { wrapper: makeWrapper() })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(fetchGlobalMovements).toHaveBeenCalledWith(2)
   })
 })
 

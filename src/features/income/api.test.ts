@@ -105,4 +105,12 @@ describe('income/api', () => {
     await copyPrevious('2026-06')
     expect(c.post).toHaveBeenCalledWith('/income/plan/2026-06/copy-previous')
   })
+
+  it('deleteTemplate DELETE', async () => {
+    const c = await api()
+    vi.mocked(c.delete).mockResolvedValueOnce({ data: null })
+    const { deleteTemplate } = await import('./api')
+    await deleteTemplate('t1')
+    expect(c.delete).toHaveBeenCalledWith('/income/templates/t1')
+  })
 })

@@ -14,6 +14,7 @@ import {
   useUndoMaterialization,
   useMaterializeAll,
   useCreateTemplate,
+  useDeleteTemplate,
   useApplyTemplate,
   useCopyPrevious,
 } from './queries'
@@ -28,6 +29,7 @@ vi.mock('./api', () => ({
   undoMaterialization: vi.fn().mockResolvedValue(undefined),
   materializeAll: vi.fn().mockResolvedValue({ materialized: [], skipped: [] }),
   createTemplate: vi.fn().mockResolvedValue({ id: 't1' }),
+  deleteTemplate: vi.fn().mockResolvedValue(undefined),
   applyTemplate: vi.fn().mockResolvedValue(undefined),
   copyPrevious: vi.fn().mockResolvedValue(undefined),
 }))
@@ -123,6 +125,16 @@ describe('mutations — só plano invalida income', () => {
     const { result } = renderHook(() => useCreateTemplate(), { wrapper: wrapperFor(client) })
     await result.current.mutateAsync({ name: 'T', items: [] })
     expect(createTemplate).toHaveBeenCalledWith('T', [])
+    expect(spy).toHaveBeenCalledWith({ queryKey: incomeKeys.templates() })
+  })
+
+  it('useDeleteTemplate invalida templates', async () => {
+    const { deleteTemplate } = await import('./api')
+    const client = makeClient()
+    const spy = vi.spyOn(client, 'invalidateQueries')
+    const { result } = renderHook(() => useDeleteTemplate(), { wrapper: wrapperFor(client) })
+    await result.current.mutateAsync('t1')
+    expect(deleteTemplate).toHaveBeenCalledWith('t1')
     expect(spy).toHaveBeenCalledWith({ queryKey: incomeKeys.templates() })
   })
 })

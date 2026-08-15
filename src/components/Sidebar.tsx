@@ -11,6 +11,7 @@ import {
   PiggyBank,
   Landmark,
   CalendarClock,
+  Scale,
   Sun,
   Moon,
   type LucideIcon,
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
   { to: '/contas', label: 'Contas', icon: CalendarClock },
   { to: '/cartoes', label: 'Cartões', icon: CreditCard },
   { to: '/parcelamentos', label: 'Parcelamentos', icon: Layers },
+  { to: '/decisao-compra', label: 'Decisão de Compra', icon: Scale },
   { to: '/categorias', label: 'Categorias', icon: Tags },
 ]
 

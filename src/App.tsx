@@ -9,6 +9,7 @@ import CreditCardsPage from '@/pages/CreditCardsPage'
 import CreditCardDetailPage from '@/pages/CreditCardDetailPage'
 import InstallmentsPage from '@/pages/InstallmentsPage'
 import InstallmentGroupDetailPage from '@/pages/InstallmentGroupDetailPage'
+import PurchaseDecisionPage from '@/pages/PurchaseDecisionPage'
 import ReportMonthlyPage from '@/pages/ReportMonthlyPage'
 import ReportQuarterlyPage from '@/pages/ReportQuarterlyPage'
 import ReportSemiannualPage from '@/pages/ReportSemiannualPage'
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/cartoes/:id" element={<CreditCardDetailPage />} />
         <Route path="/parcelamentos" element={<InstallmentsPage />} />
         <Route path="/parcelamentos/:id" element={<InstallmentGroupDetailPage />} />
+        <Route path="/decisao-compra" element={<PurchaseDecisionPage />} />
         <Route path="/categorias" element={<CategoriesPage />} />
         <Route path="/relatorios" element={<Navigate to="/relatorios/mensal" replace />} />
         <Route path="/relatorios/mensal" element={<ReportMonthlyPage />} />

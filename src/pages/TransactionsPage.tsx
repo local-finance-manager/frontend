@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { PageContainer } from '@/components/PageContainer'
@@ -41,6 +42,21 @@ export default function TransactionsPage() {
     })
   }
   const actions = useTransactionActions(creditCards, makeRecurring)
+
+  // Atalho vindo da Decisão de Compra ("Vou pagar à vista"): ?novo=1&titulo=&valor=
+  // abre o formulário pré-preenchido. Limpa os params para não reabrir em refresh.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { openNew } = actions
+  useEffect(() => {
+    if (searchParams.get('novo') === '1') {
+      const valor = Number(searchParams.get('valor'))
+      openNew({
+        title: searchParams.get('titulo') || undefined,
+        amount: valor > 0 ? valor : undefined,
+      })
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, setSearchParams, openNew])
 
   return (
     <PageContainer>

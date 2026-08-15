@@ -19,11 +19,21 @@ type CreditCardOption = {
   lastFourDigits: string | null
 }
 
+// Pré-preenchimento vindo da Decisão de Compra ("Vou parcelar"): x parcelas de y,
+// título e valor à vista (principal → ativa a exibição de juros).
+export type InstallmentPrefill = {
+  title?: string
+  installmentsCount?: number
+  installmentAmount?: number // centavos → abre em modo by_installment
+  principalAmount?: number // centavos
+}
+
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   creditCards: CreditCardOption[]
   initialCreditCardId?: string
+  prefill?: InstallmentPrefill
 }
 
 type FormState = {
@@ -90,6 +100,7 @@ export function InstallmentFormDialog({
   onOpenChange,
   creditCards,
   initialCreditCardId,
+  prefill,
 }: Props) {
   const navigate = useNavigate()
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
@@ -106,10 +117,25 @@ export function InstallmentFormDialog({
       ...DEFAULT_FORM,
       creditCardId: initialCreditCardId ?? '',
       purchaseDate: todayString(),
+      title: prefill?.title ?? DEFAULT_FORM.title,
+      installmentsCount: prefill?.installmentsCount ?? DEFAULT_FORM.installmentsCount,
+      ...(prefill?.installmentAmount
+        ? { inputMode: 'by_installment' as const, amount: prefill.installmentAmount }
+        : {}),
+      principal: prefill?.principalAmount ?? DEFAULT_FORM.principal,
     })
     setError(null)
     resetPreview()
-  }, [open, initialCreditCardId, resetPreview])
+    // prefill por valores primitivos (evita re-disparo por identidade de objeto)
+  }, [
+    open,
+    initialCreditCardId,
+    resetPreview,
+    prefill?.title,
+    prefill?.installmentsCount,
+    prefill?.installmentAmount,
+    prefill?.principalAmount,
+  ])
 
   // Preview vem do backend (rateio de centavos + ciclo do cartão não são
   // recalculados no front). Debounced para coalescer a digitação.

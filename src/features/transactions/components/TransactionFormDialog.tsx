@@ -30,6 +30,8 @@ type CreditCardOption = {
 export type TransactionPrefill = {
   paymentMethod?: PaymentMethod
   creditCardId?: string
+  title?: string
+  amount?: number // centavos (ex.: "Vou pagar à vista" da Decisão de Compra)
 }
 
 type Props = {
@@ -109,12 +111,14 @@ export function TransactionFormDialog({ open, editing, onOpenChange, creditCards
         competenceDate: todayString(),
         paymentMethod: prefill?.paymentMethod ?? DEFAULT_FORM.paymentMethod,
         creditCardId: prefill?.creditCardId ?? DEFAULT_FORM.creditCardId,
+        title: prefill?.title ?? DEFAULT_FORM.title,
+        amount: prefill?.amount ?? DEFAULT_FORM.amount,
       })
       setSelectedType(null)
     }
     setError(null)
     // prefill por valores primitivos (evita re-disparo por identidade de objeto)
-  }, [open, editing, prefill?.paymentMethod, prefill?.creditCardId])
+  }, [open, editing, prefill?.paymentMethod, prefill?.creditCardId, prefill?.title, prefill?.amount])
 
   function handlePaymentMethodChange(method: PaymentMethod | '') {
     setForm((prev) => ({

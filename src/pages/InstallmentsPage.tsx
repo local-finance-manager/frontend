@@ -7,7 +7,10 @@ import { isAppError } from '@/lib/api-client'
 import { useCreditCards } from '@/features/credit-cards/queries'
 import { useInstallmentGroups } from '@/features/installments/queries'
 import { InstallmentGroupItem } from '@/features/installments/components/InstallmentGroupItem'
-import { InstallmentFormDialog } from '@/features/installments/components/InstallmentFormDialog'
+import {
+  InstallmentFormDialog,
+  type InstallmentPrefill,
+} from '@/features/installments/components/InstallmentFormDialog'
 import { GROUP_STATUS_LABELS, type InstallmentGroupStatus } from '@/features/installments/types'
 
 export default function InstallmentsPage() {
@@ -16,14 +19,26 @@ export default function InstallmentsPage() {
 
   const [formOpen, setFormOpen] = useState(false)
   const [initialCardId, setInitialCardId] = useState<string | undefined>(undefined)
+  const [prefill, setPrefill] = useState<InstallmentPrefill | undefined>(undefined)
   const [cardFilter, setCardFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<InstallmentGroupStatus | ''>('')
 
-  // Atalho vindo do detalhe do cartão: ?novo=1&cartao=<id> abre o modal já com o
-  // cartão pré-selecionado. Limpa os params para não reabrir em refresh.
+  // Atalhos externos: ?novo=1&cartao=<id> (detalhe do cartão) e, vindo da Decisão de
+  // Compra, titulo/parcelas/valor/avista pré-preenchem a compra (x parcelas de y +
+  // valor à vista como principal). Limpa os params para não reabrir em refresh.
   useEffect(() => {
     if (searchParams.get('novo') === '1') {
       setInitialCardId(searchParams.get('cartao') ?? undefined)
+      const parcelas = Number(searchParams.get('parcelas'))
+      const valor = Number(searchParams.get('valor'))
+      const avista = Number(searchParams.get('avista'))
+      const titulo = searchParams.get('titulo')
+      setPrefill({
+        title: titulo || undefined,
+        installmentsCount: parcelas >= 2 && parcelas <= 72 ? parcelas : undefined,
+        installmentAmount: valor > 0 ? valor : undefined,
+        principalAmount: avista > 0 ? avista : undefined,
+      })
       setFormOpen(true)
       setSearchParams({}, { replace: true })
     }
@@ -31,6 +46,7 @@ export default function InstallmentsPage() {
 
   function openNewForm() {
     setInitialCardId(undefined)
+    setPrefill(undefined)
     setFormOpen(true)
   }
 
@@ -133,6 +149,7 @@ export default function InstallmentsPage() {
         onOpenChange={setFormOpen}
         creditCards={cards}
         initialCreditCardId={initialCardId}
+        prefill={prefill}
       />
     </PageContainer>
   )
